@@ -1,0 +1,6 @@
+services:
+  app:
+    image: ghcr.io/csa-tech-team/axios:master
+    restart: always
+    ports:
+      - 9298:3000
