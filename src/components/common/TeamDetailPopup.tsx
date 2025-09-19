@@ -70,8 +70,8 @@ const TeamDetails: FC<TeamDetailPopupProps> = ({ data }) => {
 
     {/* Left Section - Team Info */}
     <div className="w-full lg:w-1/3 flex flex-col gap-6">
-      <div className="bg-[#232323] rounded-xl p-4 shadow-lg">
-        <h2 className="text-xl font-bold text-violet-400 mb-4">Team Info</h2>
+      <div className="bg-[#352b46] rounded-xl p-4 shadow-lg">
+        <h2 className="text-xl font-bold text-[#80466E] mb-4">Team Info</h2>
         <div className="space-y-4">
           <div>
             <label className="text-gray-400 text-sm">Team ID</label>
@@ -100,19 +100,19 @@ const TeamDetails: FC<TeamDetailPopupProps> = ({ data }) => {
 
       {/* Invite Box - Highlighted */}
       {!data?.lock && (
-        <div className="bg-[#2b213b] border border-violet-600 rounded-xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold text-violet-400 mb-4">Invite Members</h2>
-          <form className="flex gap-3">
+        <div className="bg-[#352b46]   rounded-xl p-4 shadow-lg">
+          <h2 className="text-2xl font-bold text-[#80466E] mb-4">Invite Members</h2>
+          <form className="flex max-[400px]:flex-col  gap-3">
             <Input
               type="email"
               required
               placeholder="Enter email"
               value={invite}
-              className="bg-[#1a1a1a] text-white flex-1 text-lg rounded-lg px-4 py-2"
+              className="bg-[#1a1a1a] text-white flex-1 text-lg max-[500px]:text-sm rounded-lg px-4 py-2"
               onChange={(e) => setInvite(e.target.value)}
             />
             <Button
-              className="bg-violet-600 hover:bg-violet-700 px-8 py-2 text-lg rounded-lg"
+              className="bg-[#80466E] hover:bg-Violet px-8 py-2 text-lg max-[500px]:text-sm rounded-lg"
               type="submit"
               onClick={(e) => {
                 e.preventDefault();
@@ -166,7 +166,7 @@ const TeamDetails: FC<TeamDetailPopupProps> = ({ data }) => {
               <div className="flex flex-col flex-1">
                 <div className="text-white font-medium text-sm">{elt?.email}</div>
                 {elt?.email === data?.members[0]?.email ? (
-                  <span className="text-xs text-violet-400">Owner</span>
+                  <span className="text-xs text-[#80466E]">Owner</span>
                 ) : (
                   <span className="text-xs text-green-400">Active</span>
                 )}

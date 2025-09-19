@@ -56,6 +56,9 @@ const EditProfile = () => {
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState<number>(0);
   const [showResend, setShowResend] = useState(false);
+  //
+  const [rememberRollNo, setRememberRollNo] = useState<boolean | null>(null);
+
   const queryClient = useQueryClient();
   useEffect(() => {
     if (!showResend) {
@@ -78,6 +81,7 @@ const EditProfile = () => {
     form.setValue("branchOfStudy", user?.profile?.branchOfStudy);
     form.setValue("degreeOfStudy", user?.profile?.degreeOfStudy);
     form.setValue("gender", user?.gender);
+    form.setValue("rollNumber", user?.profile?.rollNumber);
     form.setValue("referralCode", user?.referralCode);
     console.log(user);
   }, [user]);
@@ -93,6 +97,7 @@ const EditProfile = () => {
     yearOfStudy: z.string().optional(),
     degreeOfStudy: z.string().optional(),
     branchOfStudy: z.string().optional(),
+    rollNumber: z.string().optional(),   
   });
   const { getIsProfileCompleted, setIsProfileCompleted } = useAuthStore();
   const isProfileCompleted = getIsProfileCompleted();
@@ -107,6 +112,7 @@ const EditProfile = () => {
       gender: (user?.gender as any) || "",
       yearOfStudy: (user?.profile?.yearOfStudy as any) || "",
       degreeOfStudy: (user?.profile?.degreeOfStudy as any) || "",
+      rollNumber: (user?.profile?.rollNumber as any) || "",
       branchOfStudy: (user?.profile?.branchOfStudy as any) || "",
     },
   });
@@ -148,15 +154,21 @@ const EditProfile = () => {
 
   const updateUserMutation = useMutation({
     mutationFn: async (data: any) => {
-      console.log({ data, gender });
+      console.log("Data we have is : ",{ data, gender });
       const response = await putWithAuth(ApiPaths.USER, {
         profile: {
           firstName: data.firstName,
           lastName: data.lastName,
           collegeName: selectedCollege,
           yearOfStudy: selectedYear,
-          degreeOfStudy: selectedCourse,
+          degreeOfStudy: user?.role === "ALUMNI" ? "NOT APPLICABLE" : selectedCourse,
           branchOfStudy: "DUMMY",
+          rollNumber:
+          user?.role === "ALUMNI"
+            ? rememberRollNo
+              ? data.rollNumber
+              : "NOT REMEMBERED"
+            : undefined,
         },
         gender: gender,
         phoneNumber: "+91 " + data?.phoneNumber,
@@ -210,14 +222,45 @@ const EditProfile = () => {
     },
   });
   const copyReferral = () => {
-    navigator.clipboard.writeText(
-      `https://axios.app.amcspsgtech.in/signup?referralCode=${user?.referralCode}`
-    );
-    toast({
-      title: "Referral code copied successfully.",
-      description: "Share the link copied to refer someone.",
-    });
+    try {
+      const referralCode = user?.referralCode;
+      if (!referralCode) {
+        toast({
+          title: "No referral code found",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const referralLink = `http://10.1.234.4:3000/signup?referralCode=${referralCode}`;
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(referralLink);
+      } else {
+        // fallback for HTTP
+        const textArea = document.createElement("textarea");
+        textArea.value = referralLink;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+
+      toast({
+        title: "Referral link copied 🎉",
+        description: "Share this link with your friends.",
+      });
+    } catch (err) {
+      console.error("Clipboard copy failed", err);
+      toast({
+        title: "Copy failed",
+        description: "Your browser may not support clipboard access.",
+        variant: "destructive",
+      });
+    }
   };
+
   const sendOTP = () => {
     generatePhoneOtp.mutateAsync();
   };
@@ -233,6 +276,7 @@ const EditProfile = () => {
     user?.profile?.yearOfStudy ?? ""
   );
   const [courses, setCourses] = useState<string[]>();
+
 
   const { isSuccess } = useQuery({
     queryKey: ["college"],
@@ -258,7 +302,7 @@ const EditProfile = () => {
       <div className="w-full lg:w-4/5 xl:w-3/5 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl p-8">
         {/* ID Header */}
         <h2 className="text-2xl md:text-3xl font-semibold text-center text-white mb-10">
-          Your ID: <span className="text-indigo-400">{user?.id}</span>
+          Your ID: <span className="text-[#80466E]">{user?.id}</span>
         </h2>
 
         {/* Form */}
@@ -406,7 +450,8 @@ const EditProfile = () => {
 
             {/* Referral Code */}
             {isProfileCompleted && (
-              <FormField
+              <>
+              { user && user.role!='ALUMNI' && <FormField
                 control={form.control}
                 name="referralCode"
                 render={({ field }) => (
@@ -432,11 +477,12 @@ const EditProfile = () => {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              />}
+              </>
             )}
 
             {/* College */}
-            <FormField
+            {user && user.role!='ALUMNI' && <FormField
               control={form.control}
               name="collegeName"
               render={({ field }) => (
@@ -474,10 +520,10 @@ const EditProfile = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />}
 
             {/* Year of Study */}
-            <FormField
+            { user && user.role!='ALUMNI' && <FormField
               control={form.control}
               name="yearOfStudy"
               render={({ field }) => (
@@ -515,55 +561,121 @@ const EditProfile = () => {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />}
 
             {/* Course */}
-            <FormField
-              control={form.control}
-              name="degreeOfStudy"
-              render={({ field }) => (
-                <FormItem>
-                  <Label className="text-gray-300">Course</Label>
-                  <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      <Book className="text-gray-400 mr-3" />
-                      {!isProfileCompleted ? (
-                        <Select
-                          onValueChange={(e) => setSelectedCourse(e as any)}
-                          value={selectedCourse}
-                        >
-                          <SelectTrigger className="bg-transparent border-none text-white w-full">
-                            <SelectValue placeholder="Select Course" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {courses?.map((elt: any) => (
-                              <SelectItem key={elt} value={elt}>
-                                {elt}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          {...field}
-                          type="text"
-                          disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
-                        />
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {user && user.role === "ALUMNI" ? (
+  <FormField
+    control={form.control}
+    name="rollNumber"
+    render={({ field }) => (
+      <FormItem>
+        <Label className="text-gray-300 flex items-center">
+          { !isProfileCompleted  ? "Do you remember your Roll No? 😅":"Roll Number"}
+        </Label>
+        <FormControl>
+          <div className="flex flex-col gap-3 bg-[#1f1f1f] rounded-xl px-4 py-3">
+            {!isProfileCompleted ? (
+              <>
+                {/* Funny toggle */}
+                <div className="flex gap-4 items-center">
+                  <button
+                    type="button"
+                    onClick={() => setRememberRollNo(true)}
+                    className={`px-3 py-2 rounded-lg ${
+                      rememberRollNo
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-700 text-gray-300"
+                    }`}
+                  >
+                    Yes 😎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRememberRollNo(false)}
+                    className={`px-3 py-2 rounded-lg ${
+                      rememberRollNo === false
+                        ? "bg-red-600 text-white"
+                        : "bg-gray-700 text-gray-300"
+                    }`}
+                  >
+                    No 😅
+                  </button>
+                </div>
+
+                {/* Show input only if they said Yes */}
+                {rememberRollNo && (
+                  <Input
+                    {...field}
+                    type="text"
+                    placeholder="Enter your Roll No"
+                    className="bg-transparent border-none text-white placeholder-gray-400 w-full mt-2"
+                  />
+                )}
+              </>
+            ) : (
+              <Input
+                {...field}
+                type="text"
+                disabled
+                className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+              />
+            )}
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+) : (
+  <FormField
+    control={form.control}
+    name="degreeOfStudy"
+    render={({ field }) => (
+      <FormItem>
+        <Label className="text-gray-300">Course</Label>
+        <FormControl>
+          <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
+            <Book className="text-gray-400 mr-3" />
+            {!isProfileCompleted ? (
+              <Select
+                onValueChange={(e) => setSelectedCourse(e as any)}
+                value={selectedCourse}
+              >
+                <SelectTrigger className="bg-transparent border-none text-white w-full">
+                  <SelectValue placeholder="Select Course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses?.map((elt: any) => (
+                    <SelectItem key={elt} value={elt}>
+                      {elt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                {...field}
+                type="text"
+                disabled
+                className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+              />
+            )}
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+)}
+
 
             {/* Submit Button */}
             {!isProfileCompleted && (
               <div className="col-span-1 md:col-span-2 flex justify-center mt-8">
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold py-3 px-10 rounded-xl shadow-md hover:shadow-lg transition-all"
+                  className="bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-md font-medium shadow-lg transition-all duration-700 ease-in-out"
                 >
                   <Dialog open={open} onOpenChange={setOpen}>
                             Complete Profile

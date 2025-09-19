@@ -38,7 +38,7 @@ export const EventsPage = () => {
   return (
     <main className="h-full w-full flex justify-between flex-col">
       <div className="h-full p-4 flex flex-col gap-4  overflow-auto">
-        <div className="p-6 h-1/6 text-white lg:pt-16  w-full bg-[#171717] z-10 text-3xl flex items-center gap-4">
+        <div className="p-6 max-[500px]:px-2 h-1/6 text-white lg:pt-16  w-full bg-[#171717] z-10 text-3xl flex items-center gap-4">
           {windowSize.width < 1024 && showEvent ? (
             <div className="text-white " onClick={() => reset()}>
               <ArrowLeft />
@@ -51,14 +51,14 @@ export const EventsPage = () => {
         </div>
         <div className="flex flex-wrap overflow-auto scrollbar">
           <div
-            className={`flex w-full justify-center flex-wrap px-8 lg:p-12 gap-6  `}
+            className={`flex w-full justify-center flex-wrap px-8 lg:p-12 gap-6 max-[500px]:px-2 `}
           >
             {getEvents()?.length != 0 &&
               getEvents()?.map((elt: any) => (
                 <div
                   className={`${
                     showEvent == true ? " w-full" : "lg:w-[45%] w-full"
-                  } `}
+                  } flex`}
                   
                   onClick={() => navigate(`${ERouterPaths.EVENTS}/${elt.id}`)}
 

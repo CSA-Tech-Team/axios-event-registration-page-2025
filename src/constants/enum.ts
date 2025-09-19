@@ -33,6 +33,7 @@ export enum ApiPaths {
   LOGIN = "/auth/login",
   CHECK_EMAIL = "/auth/check-email",
   REGISTER = "/auth/register",
+  VERIFY_OTP_MAIL = "/auth/generateOTP/verify-mail",
 
   //USER
   USER = "/me/user",

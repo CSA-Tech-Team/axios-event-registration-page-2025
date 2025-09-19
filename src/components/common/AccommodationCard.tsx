@@ -6,6 +6,8 @@ import {
   DialogTrigger,
   DialogHeader,
 } from "@/components/ui/dialog";
+import { AlertCircle } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +24,8 @@ import useAxios from "@/hooks/useAxios";
 import { ApiPaths } from "@/constants/enum";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/ApiStates";
+import WhatsAppLink from "./WhatsAppLink";
+import CoordinatorInfo from "./CoordinatorInfo";
 
 interface AccommodationCardProps {
   reset?: () => void;
@@ -35,6 +39,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
 
   const { setAccommodation, getAccommodation } = useAuthStore();
   const { postWithAuth, getWithAuth } = useAxios();
+  const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
 
   // --- Fetch accommodation request ---
@@ -110,7 +115,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
         Please read the terms & conditions carefully before proceeding.
       </p>
       <button
-        className="px-6 py-3 text-sm rounded-full mt-4 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 transition-all shadow-lg"
+        className="px-6 py-3 text-sm  mt-4 bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
         onClick={() => setShowTAndC(true)}
       >
         Request for Accommodation
@@ -118,20 +123,28 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
       <div className="mt-6 text-gray-400 text-sm text-center space-y-1">
         <p>
           To process your accommodation, a caution deposit 
-          <span className="text-violet-400"> (Refundable)</span> needs to be paid upfront.
+          <span className="text-[#80466E]"> (Refundable)</span> needs to be paid upfront.
         </p>
         <p>
-          For further details, contact: <br />
-          <span className="font-semibold">Jonathan Cecil</span> - Secretary 
-          <a href="tel:+917305540931" className="text-violet-400 ml-1">+91 7305540931</a> <br />
-          <span className="font-semibold">Govind Raghavendran</span> - Coordinator 
-          <a href="tel:+918925617246" className="text-violet-400 ml-1">+91 8925617246</a>
+          For further details, contact: <br />      
+          <span className="font-semibold">Santhosh Kumar </span> - Coordinator 
+          <WhatsAppLink phone="+919345890184" className="text-[#80466E] ml-1" message="Hello, I have a query regarding my accommodation.">
+            +91 93458 90184
+          </WhatsAppLink>
+          <br/>
+          <span className="font-semibold">Ragul Prasath V </span> - Coordinator 
+          <WhatsAppLink phone="+919345690254" className="text-[#80466E] ml-1" message="Hello, I have a query regarding my accommodation.">
+            +91 9345690254
+          </WhatsAppLink>
+          {/*<a href="tel:+918925617246" className="text-[#80466E] ml-1">+91 9345690254</a>*/}
         </p>
       </div>
     </div>
   ) : (
     <div className="flex flex-col gap-5 w-full text-white md:px-12 px-6">
-      <h3 className="text-2xl font-semibold text-violet-400">Terms & Conditions</h3>
+      <h3 className="text-2xl font-semibold text-[#80466E]">Terms & Conditions</h3>
+      {user?.gender === "MALE" ? (
+      <>
       <p className="text-gray-300 text-sm">
         Please ensure you apply only if required. Allocations once assigned cannot be changed. 
         Report any issues to the accommodation coordinators.
@@ -142,6 +155,16 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
         <p>• Accommodation is subject to availability.</p>
         <p>• Plan your travel according to the event schedule.</p>
         <p>• Arrive well in advance of your event start times.</p>
+        <p>• A security deposit of ₹300 must be paid in advance. The full amount will be refunded at checkout, provided no damages are incurred during the stay.</p>
+        <p>• Any damages to property will be charged to the individual responsible.</p>
+        <p>• Accommodation is provided on a shared basis. Room sharing will be done by the committee.</p>
+        <div className="flex items-center gap-2 text-red-400 font-medium">
+          <AlertCircle size={16} />
+          <span>
+            Kindly note: Accommodation will not be provided for female participants. 
+            We request them to make their own arrangements.
+          </span>
+        </div>
       </div>
 
       <label className="flex items-center gap-3 text-sm cursor-pointer">
@@ -165,7 +188,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
           <DialogTrigger
             className={`px-8 py-3 rounded-full font-semibold transition-all ${
               acceptTAndC
-                ? "bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg"
+                ? "bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
                 : "bg-gray-600 cursor-not-allowed"
             }`}
             disabled={!acceptTAndC}
@@ -174,7 +197,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
           </DialogTrigger>
           <DialogContent className="bg-[#121212] shadow-xl rounded-xl text-white border border-violet-700/30">
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-violet-400">
+              <DialogTitle className="text-lg font-semibold text-[#80466E]">
                 Select Food Preference
               </DialogTitle>
               <div className="flex flex-col sm:flex-row gap-4 mt-5">
@@ -188,7 +211,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
                   </SelectContent>
                 </Select>
                 <Button
-                  className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 transition-all"
+                  className="bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-sm font-medium shadow-lg transition-all duration-700 ease-in-out"
                   onClick={handleSubmit}
                 >
                   Confirm
@@ -198,6 +221,36 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
           </DialogContent>
         </Dialog>
       </div>
+    </> ) : (
+      <div className="bg-[#1E1E1E] rounded-xl p-5 text-sm space-y-3 shadow-inner border border-violet-700/30">
+      <div className="flex items-center gap-2 text-red-400 font-medium">
+        <AlertCircle size={16} />
+        <span>
+          Kindly note: Accommodation will not be provided for female participants. 
+          We request them to make their own arrangements.
+        </span>
+      </div>
+
+      <p>• Plan your travel according to the event schedule.</p>
+      <p>• Arrive well in advance of your event start times.</p>
+
+      <div className="mt-4">
+        <h4 className="text-[#80466E] font-semibold mb-2">Nearby PG/Hostel Options:</h4>
+        <ul className="list-disc list-inside text-gray-300 space-y-1">
+          <li>
+            <a href="https://maps.google.com?q=PG+near+event" target="_blank" rel="noopener noreferrer" className="text-violet-400 underline">
+              PG Option 1
+            </a>
+          </li>
+          <li>
+            <a href="https://maps.google.com?q=Hostel+near+event" target="_blank" rel="noopener noreferrer" className="text-violet-400 underline">
+              PG Option 2
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  )}
     </div>
   );
 }
@@ -208,7 +261,7 @@ return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <p>
         <span className="font-light">Accommodation Request ID:</span>{" "}
-        <span className="font-semibold text-violet-400">{getAccommodation()?.id}</span>
+        <span className="font-semibold text-[#80466E]">{getAccommodation()?.id}</span>
       </p>
       <div
         className={`px-4 py-2 rounded-full text-sm font-medium ${
@@ -238,6 +291,7 @@ return (
         </div>
       </div>
     )}
+    <CoordinatorInfo />
   </div>
 );
 

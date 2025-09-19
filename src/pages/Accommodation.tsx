@@ -1,4 +1,5 @@
 import AccommodationCard from "@/components/common/AccommodationCard.tsx";
+import AlumniAccommodation from "@/components/common/AlumniAccomodation.tsx";
 import useWindowDimensions from "@/hooks/useWindowDimension.ts";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ function Accommodation() {
   const windowSize = useWindowDimensions();
   const navigate = useNavigate();
   const {getAccommodation} = useAuthStore();
+  const user = useAuthStore((state) => state.user);
   const reset = () => {
     navigate(ERouterPaths.PROFILE);
   };
@@ -27,8 +29,8 @@ function Accommodation() {
             )}
             Accomodation
           </div>
-          <div className="flex  flex-col items-center  w-full gap-4 lg:p-0 p-6">
-            <AccommodationCard reset={() => reset()} />
+          <div className="flex  flex-col items-center  w-full gap-4 lg:p-0 p-6 max-[500px]:px-2">
+            {user?.role === "ALUMNI" ? <AlumniAccommodation /> : <AccommodationCard reset={reset} />}
           </div>
           {/*getAccommodation()&&<div className="flex mt-2 flex-col items-center  w-full gap-4 lg:p-0 p-6">
             <p className="w-1/2">

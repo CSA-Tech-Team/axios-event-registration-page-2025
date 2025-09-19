@@ -47,7 +47,7 @@ const Invitation = () => {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col p-3 align-middle items-center w-full justify-between rounded-3xl text-white md:px-12 px-6">
+            <div className="flex flex-col p-3 align-middle items-center w-full justify-between rounded-3xl font-medium text-gray-400 md:px-12 px-6">
               You have no invitations.
             </div>
           )}

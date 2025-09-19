@@ -40,7 +40,7 @@ const InvitationCard: FC<InvitationCardProps> = ({ data }) => {
 <div className="flex flex-col md:flex-row items-center justify-between gap-6 w-full p-6 rounded-2xl bg-gradient-to-br from-[#1f1f1f] to-[#2a2a2a] shadow-xl border border-violet-700/30 hover:border-violet-500/50 transition duration-300">
   {/* Left side - Request Info */}
   <div className="flex flex-col md:w-2/3 w-full">
-    <h3 className="text-lg md:text-xl font-semibold text-violet-400 mb-1">
+    <h3 className="text-lg md:text-xl font-semibold text-[#80466E] mb-1">
       Request from {data?.team?.name}
     </h3>
     <div className="flex items-center gap-2 text-sm md:text-base text-gray-300">

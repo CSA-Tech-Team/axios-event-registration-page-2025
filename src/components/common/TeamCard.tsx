@@ -85,7 +85,7 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <div className="text-2xl font-extrabold text-violet-400 tracking-wide">
+        <div className="text-2xl font-extrabold text-[#80466E] tracking-wide">
           {data?.name}
         </div>
       </div>
@@ -106,7 +106,7 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <span className="font-medium text-gray-400">Owner:</span>
-            <span className="font-semibold text-violet-300">
+            <span className="font-semibold text-[#80466E]">
               {data?.members[0]?.profile?.firstName}
             </span>
           </div>
@@ -120,7 +120,7 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
           {data?.members?.slice(1).map((elt: any, idx: number) => (
             <div
               key={idx}
-              className="px-2 py-1 rounded-md bg-violet-700/30 text-violet-200 text-sm font-medium border border-violet-500/30"
+              className="px-2 py-1 rounded-md bg-[#80466E] text-white text-sm font-medium border border-violet-500/30"
             >
               {elt?.profile?.firstName}
             </div>

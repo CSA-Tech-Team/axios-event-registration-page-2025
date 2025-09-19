@@ -22,6 +22,7 @@ import useAxios from "@/hooks/useAxios";
 import { useMutation } from "@tanstack/react-query";
 import { Mails } from "lucide-react";
 import { ApiPaths } from "@/constants/enum";
+import { toast } from "@/hooks/use-toast";
 
 interface Signup2Components {
   setActive: Dispatch<SetStateAction<number>>;
@@ -66,7 +67,7 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
     },
   });
 
-  function onSubmit(data:z.infer<typeof FormSchema>) {
+  /*function onSubmit(data:z.infer<typeof FormSchema>) {
     localStorage.setItem("emailOTP", data.otp);
     setActive(3);
     // toast({
@@ -77,7 +78,56 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
     //     </pre>
     //   ),
     // });
+  }*/
+
+    // resend OTP mutation
+  const resendOtpMutation = useMutation({
+    mutationFn: async (payload: { email: string }) => {
+      return await postWithoutAuth(ApiPaths.GENERATE_OTP, payload);
+    },
+    onSuccess: () => {
+      setTime(30);
+      setShowResend(false);
+      toast({ title: 'OTP sent', description: 'Check your email.' });
+    },
+    onError: () => {
+      toast({
+        title: 'Unable to generate OTP',
+        description: 'Please try again later or use previously sent OTP.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // verify OTP mutation
+  const verifyOTPMutation = useMutation({
+    mutationFn: async (payload: { email: string; otp: string }) => {
+      return await postWithoutAuth(ApiPaths.VERIFY_OTP_MAIL, payload);
+    },
+    // no onSuccess here — we'll handle in onSubmit to use exact data
+  });
+
+    // on submit: verify OTP first
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    try {
+      // disable button while verifying happens automatically via mutation.isLoading check below
+      console.log("Verifying OTP for", data);
+      await verifyOTPMutation.mutateAsync({ email: data.email, otp: data.otp });
+      // success:
+      localStorage.setItem('emailOTP', data.otp); // used later in final register step
+      setActive(3);
+    } catch (err: any) {
+      toast({
+        title: 'Invalid OTP',
+        description:
+          err?.response?.data?.message || 'OTP incorrect or expired. Please retry.',
+        variant: 'destructive',
+      });
+    }
   }
+  
+  const isVerifying = verifyOTPMutation.isLoading;
+  const isResending = resendOtpMutation.isLoading;
 
   const sendOTP = () => {
     console.log(localStorage.getItem("email"));
@@ -87,10 +137,10 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
   };
   return (
     <Form {...form}>
-      <div className="md:w-1/2 w-full px-12 md:px-0">
+      <div className="w-full px-6 md:px-0 sm:px-0 max-[500px]:px-0">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 mt-6 w-full "
+          className="space-y-6 mt-6 w-full  lg:px-10 md:px-10 sm:px-10 max-[500px]:px-7"
         >
           <FormField
             control={form.control}
@@ -115,15 +165,15 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
                         {...field}
                       />
                     </div>
-                    <span className="text-[#C4C4C4]">
+                    <div className="text-[#C4C4C4] mt-1 text-md ">
                       Wrong email?{" "}
                       <button
-                        className="text-white"
+                        className="text-[#80466E] ml-1"
                         onClick={() => setActive(1)}
                       >
                         Go back
                       </button>
-                    </span>
+                    </div>
                   </motion.div>
                 </FormControl>
                 <FormMessage />
@@ -147,6 +197,7 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
                       maxLength={6}
                       className="w-full flex  justify-between"
                       {...field}
+                      autoFocus={true}
                       required
                     >
                       <InputOTPGroup>
@@ -176,10 +227,14 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
                     {showResend && (
                       <button
                         type="submit"
-                        className="text-md flex justify-start"
-                        onClick={sendOTP}
+                        className="text-md flex justify-start text-[#80466E] underline"
+                        onClick={() => {
+                          form.resetField("otp"); // clear OTP field
+                          //resendOtpMutation.mutate({ email: localStorage.getItem("email") || "" });
+                          sendOTP();
+                        }}
                       >
-                        Request OTP again
+                        {isResending ? 'Sending...' : 'Request OTP again'}
                       </button>
                     )}
                   </motion.div>
@@ -195,9 +250,9 @@ const Signup2: FC<Signup2Components> = ({ setActive }) => {
           >
             <Button
               type="submit"
-              className="w-full bg-[#5D3288] hover:bg-[#5D3288] text-white p-6 "
+              className="w-full bg-[#512F5C] hover:bg-[#4b2570] text-white p-6 "
             >
-              Next
+              {isVerifying ? 'Verifying...' : 'Next'}
             </Button>
           </motion.div>
         </form>

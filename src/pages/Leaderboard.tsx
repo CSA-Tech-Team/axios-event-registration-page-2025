@@ -44,18 +44,18 @@ export const Leaderboard = () => {
   return (
     // <></>
     
-    <main className="flex items-center justify-center h-[92vh] w-full bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-800 scrollbar overflow-auto">
-      <div className="text-center p-6 scrollbar">
-        <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg tracking-wide">
+    <main className="fixed flex items-center justify-center w-full h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-800">
+      <div className="text-center p-6">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg tracking-wide">
           Coming Soon
         </h1>
-        <p className="mt-4 text-lg md:text-xl text-indigo-200 font-medium ">
-          The leaderboard will be live soon. Stay tuned!
+        <p className="mt-4 text-base sm:text-lg md:text-xl text-indigo-200 font-medium">
+          Stay tuned!
         </p>
         <div className="mt-8 flex justify-center">
           <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1"></div>
-          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 delay-200"></div>
-          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 delay-400"></div>
+          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 [animation-delay:200ms]"></div>
+          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 [animation-delay:400ms]"></div>
         </div>
       </div>
     </main>

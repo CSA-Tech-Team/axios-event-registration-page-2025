@@ -44,28 +44,28 @@ export const EventCard: FC<EventCardProps> = ({ data }) => {
 
       {/* Event Info */}
       <div className="px-8 pb-6 text-center space-y-3">
-        <h2 className="text-2xl font-bold tracking-wide">{data?.title}</h2>
+        <h2 className="text-2xl font-bold text-[#80466E] tracking-wide">{data?.title}</h2>
         <p className="text-gray-300 text-sm leading-relaxed">
           {data?.description}
         </p>
 
         {/* Timings */}
-        <div className="flex justify-center gap-6 text-gray-200 mt-4">
-          <div className="flex items-center gap-2">
-            <Clock9 className="w-5 h-5" />
+        <div className="flex max-[450px]:flex-col max-[425px]:items-center max-[425px]:gap-3 justify-center gap-6 text-gray-200 mt-4">
+          {/*<div className="flex items-center gap-2">
+            <Clock9 className="w-5 h-5 " color="#80466E"/>
             <span className="font-medium">
               {data?.startTime.slice(11, 16)} - {data?.endTime.slice(11, 16)}
             </span>
-          </div>
+          </div>*/}
           <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5" />
+            <CalendarDays className="w-5 h-5" color="#80466E"/>
             <span className="font-medium">{data?.startTime.slice(0, 10)}</span>
           </div>
         </div>
 
         {/* Show Details Button */}
         <div className="pt-6">
-          <button className="bg-gradient-to-r from-[#f9d423] to-[#ff4e50] text-black px-8 py-2.5 rounded-full font-semibold shadow-lg hover:scale-105 transition duration-300">
+          <button className="bg-[#80466E] bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5 rounded-full font-semibold shadow-lg transition-all duration-700 ease-in-out">
             Show Details
           </button>
         </div>

@@ -38,6 +38,7 @@ const Teams = () => {
     }
   };
 
+  const {user} = useAuthStore.getState();
 
 
   const teamCreateMutation = useMutation({
@@ -79,23 +80,16 @@ const Teams = () => {
               </div>
               {showTeamDetails ? "Teams Details" : "Team"}
             </div>
-            {!showTeamDetails ? (
+            {!showTeamDetails && user!=null && user?.role!='ALUMNI' ? (
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <button
-                    className="relative group overflow-hidden rounded-2xl px-12 py-4 text-sm font-semibold text-white tracking-wide
-                              bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600
-                              shadow-lg shadow-violet-900/40
-                              transition-all duration-300 ease-out
-                              hover:scale-[1.05] hover:shadow-violet-800/60"
+                    className="flex justify-center bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
                   >
-                    <span className="relative z-10">Create</span>
+                    <span className="relative z-10 p-0 text-xl">Create</span>
 
                     {/* Subtle animated glow */}
-                    <span
-                      className="absolute inset-0 bg-gradient-to-r from-indigo-400 via-violet-500 to-fuchsia-500
-                                opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500"
-                    />
+                    
                   </button>
                 </DialogTrigger>
 
@@ -111,7 +105,7 @@ const Teams = () => {
                       />
                       <div className="p-3">
                         <Button
-                          className="bg-Violet"
+                          className="bg-[#80466E]"
                           onClick={() => {
                             teamCreateMutation.mutateAsync();
                           }}
@@ -141,21 +135,26 @@ const Teams = () => {
               />
             </div>
           ) : (
-            <div className="grid z-0 h-5/6 lg:mt-0 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 items-stretch overflow-auto scrollbar w-full gap-6 lg:p-12 p-6">
-              {getTeams()?.map((elt) => (
-                <div
-                  onClick={() => {
-                    setShowTeamDetails(true);
-                    console.log(elt);
-                    setTeam(elt);
-                  }}
-                  className="h-full"
-                  key={elt?.id}
-                >
-                  {/* {elt} */}
-                  <TeamCard data={elt} />
+             <div className="grid z-0 h-5/6 lg:mt-0 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 items-stretch overflow-auto scrollbar w-full gap-6 lg:p-12 p-6">
+              {getTeams() && getTeams().length > 0 ? (
+                getTeams().map((elt) => (
+                  <div
+                    onClick={() => {
+                      setShowTeamDetails(true);
+                      console.log(elt);
+                      setTeam(elt);
+                    }}
+                    className="h-full"
+                    key={elt?.id}
+                  >
+                    <TeamCard data={elt} />
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full flex justify-center items-center text-gray-400 text-lg font-medium">
+                  { user && user?.role!="ALUMNI" ? "No teams have been created.":" Alumni cannot create or join teams."}
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>

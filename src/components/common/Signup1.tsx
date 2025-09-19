@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import useAxios from "@/hooks/useAxios";
 import { Mails } from "lucide-react";
 import { ApiPaths } from "@/constants/enum";
+import { toast } from "@/hooks/use-toast";
 interface Signup1Components {
   setActive: Dispatch<SetStateAction<number>>;
 }
@@ -31,6 +32,17 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
   });
 
   const { postWithoutAuth } = useAxios();
+
+  // --- Mutation to check if email exists ---
+  const checkEmailMutation = useMutation({
+    //mutationKey: ["checkEmail"],
+    mutationFn: async (data: { email: string }) => {
+      const response = await postWithoutAuth(ApiPaths.CHECK_EMAIL, data);
+      console.log("Response is : ",response);
+      return response.data;
+    },
+  });
+
   const generateOTPMutation = useMutation({
     mutationKey: ["register"],
     mutationFn: async (data: any) => {
@@ -44,8 +56,8 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    generateOTPMutation.mutateAsync(data);
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    /*generateOTPMutation.mutateAsync(data);*/
     // toast({
     //   title: "You submitted the following values:",
     //   description: (
@@ -54,14 +66,35 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
     //     </pre>
     //   ),
     // });
+    try {
+      // 1️⃣ Check if email exists
+      const result = await checkEmailMutation.mutateAsync({ email: data.email });
+      console.log("Email check result:", result);
+      if (result.exists) {
+        toast({
+          title: "Email already registered",
+          description: "Please login or use another email.",
+          variant: "destructive",
+        });
+        return; // stop here
+      }
+      await generateOTPMutation.mutateAsync(data);
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err?.response?.data?.message || "Something went wrong",
+        variant: "destructive",
+      });
+    }
+
   }
 
   return (
     <Form {...form}>
-      <div className="md:w-1/2 w-full px-12 md:px-0">
+      <div className="w-full px-6 md:px-0 max-[500px]:px-0">
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 mt-6 w-full"
+          className="space-y-6 mt-6 w-full lg:px-10 md:px-10 sm:px-10 max-[500px]:px-7"
         >
           <FormField
             control={form.control}
@@ -77,6 +110,7 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
                       placeholder="Enter your email*"
                       type="email"
                       required
+                      autoFocus={true}
                       className="py-4  flex placeholder:text-[#B2B2B2] outline-none w-full border-0"
                       {...field}
                     />
@@ -88,9 +122,13 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
           />
           <Button
             type="submit"
-            className="w-full bg-[#5D3288] hover:bg-[#5D3288] text-white p-6 "
+            disabled={checkEmailMutation.isPending || generateOTPMutation.isPending}
+
+            className="w-full bg-[#512F5C] hover:bg-[#4b2570] text-white p-6 "
           >
-            Next
+            {checkEmailMutation.isPending || generateOTPMutation.isPending
+              ? "Processing..."
+              : "Next"}
           </Button>
         </form>
       </div>
