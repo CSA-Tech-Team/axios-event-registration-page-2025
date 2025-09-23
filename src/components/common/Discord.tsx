@@ -3,8 +3,8 @@ import WidgetBot from "@widgetbot/react-embed";
 const Discord = () => (
   <WidgetBot
     className="w-full h-full"
-    server="1276042419334283316"
-    channel="1276042727766888510"
+    server="1418653752696639541"
+    channel="1419739587638460486"
   />
 );
 

@@ -49,6 +49,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
+import FloatingWhatsAppButton from "./FloatingWhatsAppButton";
 
 const EditProfile = () => {
   const { getUser } = useAuthStore();
@@ -299,6 +300,7 @@ const EditProfile = () => {
   if (isSuccess) {
     return (
     <div className="flex w-full h-full justify-center items-start overflow-auto bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] p-6 scrollbar-hide">
+      {/* <FloatingWhatsAppButton inviteLink="https://chat.whatsapp.com/K6ZurxzU7siAY1ZRxeiL4K" /> */}
       <div className="w-full lg:w-4/5 xl:w-3/5 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl p-8">
         {/* ID Header */}
         <h2 className="text-2xl md:text-3xl font-semibold text-center text-white mb-10">
