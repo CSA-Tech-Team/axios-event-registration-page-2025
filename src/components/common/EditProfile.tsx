@@ -44,7 +44,7 @@ import {
   DialogHeader,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Label } from "../ui/label";
@@ -124,6 +124,25 @@ const EditProfile = () => {
   const { putWithAuth, postWithAuth, getWithoutAuth } = useAxios();
   const generatePhoneOtp = useMutation({
     mutationFn: async () => {
+      if (user?.role === "USER") {
+      console.log("Validating before phone OTP");
+      console.log({ formValues: form.getValues(), selectedCollege, selectedYear, selectedCourse });
+      if (
+        !form.getValues("firstName") ||
+        !form.getValues("lastName") ||
+        !selectedCollege ||
+        !selectedYear ||
+        selectedCourse==="" ||
+        !form.getValues("phoneNumber")
+      ) {
+        console.log("Validation failed");
+        toast({
+          title: "All fields are required",
+          description: "Please fill all the fields before requesting OTP",
+        });
+        throw new Error("Please fill all the fields");
+      }
+    }
       const response = await postWithAuth(ApiPaths.GENERATE_OTP_PHONE);
       console.log(response?.data);
       setShowResend(false);
@@ -153,46 +172,107 @@ const EditProfile = () => {
     },
   });
 
+  // const updateUserMutation = useMutation({
+  //   mutationFn: async (data: any) => {
+  //     console.log("Data we have is : ",{ data, gender });
+  //     const response = await putWithAuth(ApiPaths.USER, {
+  //       profile: {
+  //         firstName: data.firstName,
+  //         lastName: data.lastName,
+  //         collegeName: selectedCollege,
+  //         yearOfStudy: selectedYear,
+  //         degreeOfStudy: user?.role === "ALUMNI" ? "NOT APPLICABLE" : selectedCourse,
+  //         branchOfStudy: "DUMMY",
+  //         rollNumber:
+  //         user?.role === "ALUMNI"
+  //           ? rememberRollNo
+  //             ? data.rollNumber
+  //             : "NOT REMEMBERED"
+  //           : undefined,
+  //       },
+  //       gender: gender,
+  //       phoneNumber: "+91 " + data?.phoneNumber,
+  //     });
+  //     console.log(data);
+  //     console.log(response);
+  //     return response;
+  //   },
+  //   onSuccess: () => {
+  //     generatePhoneOtp.mutateAsync();
+  //     toast({
+  //       title: "Verify phone number",
+  //       description: "Verify phone number",
+  //     });
+  //   },
+  //   onError: (error) => {
+  //     console.log(error);
+  //     toast({
+  //       title: "Uh oh! Something went wrong.",
+  //       description: `${error}`,
+  //     });
+  //   },
+  // });
   const updateUserMutation = useMutation({
-    mutationFn: async (data: any) => {
-      console.log("Data we have is : ",{ data, gender });
-      const response = await putWithAuth(ApiPaths.USER, {
-        profile: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          collegeName: selectedCollege,
-          yearOfStudy: selectedYear,
-          degreeOfStudy: user?.role === "ALUMNI" ? "NOT APPLICABLE" : selectedCourse,
-          branchOfStudy: "DUMMY",
-          rollNumber:
+  mutationFn: async (data: any) => {
+    // Validation only for USER role
+    if (user?.role === "USER") {
+      console.log("Validating before updating user");
+      if (
+        !data.firstName ||
+        !data.lastName ||
+        !selectedCollege ||
+        !selectedYear ||
+        selectedCourse === "" ||
+        !data.phoneNumber
+      ) {
+        toast({
+          title: "All fields are required",
+          description: "Please fill all the fields",
+        });
+        throw new Error("Please fill all the fields");
+      }
+    }
+
+    console.log("Data we have is : ", { data, gender });
+    const response = await putWithAuth(ApiPaths.USER, {
+      profile: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        collegeName: selectedCollege,
+        yearOfStudy: selectedYear,
+        degreeOfStudy:
+          user?.role === "ALUMNI" ? "NOT APPLICABLE" : selectedCourse,
+        branchOfStudy: "DUMMY",
+        rollNumber:
           user?.role === "ALUMNI"
             ? rememberRollNo
               ? data.rollNumber
               : "NOT REMEMBERED"
             : undefined,
-        },
-        gender: gender,
-        phoneNumber: "+91 " + data?.phoneNumber,
-      });
-      console.log(data);
-      console.log(response);
-      return response;
-    },
-    onSuccess: () => {
-      generatePhoneOtp.mutateAsync();
-      toast({
-        title: "Verify phone number",
-        description: "Verify phone number",
-      });
-    },
-    onError: (error) => {
-      console.log(error);
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: `${error}`,
-      });
-    },
-  });
+      },
+      gender: gender,
+      phoneNumber: "+91 " + data?.phoneNumber,
+    });
+
+    console.log(data);
+    console.log(response);
+    return response;
+  },
+  onSuccess: () => {
+    generatePhoneOtp.mutateAsync();
+    toast({
+      title: "Verify phone number",
+      description: "Verify phone number",
+    });
+  },
+  onError: (error) => {
+    console.log(error);
+    toast({
+      title: "Uh oh! Something went wrong.",
+      description: `${error}`,
+    });
+  },
+});
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     updateUserMutation.mutateAsync(data as any);
@@ -292,9 +372,18 @@ const EditProfile = () => {
   });
 
   useEffect(() => {
-    setCourses(
-      college?.find((elt: any) => elt.name == selectedCollege)?.courses ?? []
-    );
+    const newCourses =
+      college?.find((elt: any) => elt.name === selectedCollege)?.courses ?? [];
+    setCourses(newCourses);
+
+    // Preserve previous selection if valid, else select first course
+    if (selectedCourse && newCourses.includes(selectedCourse)) {
+      setSelectedCourse(selectedCourse);
+    } else if (newCourses.length > 0) {
+      setSelectedCourse(newCourses[0]);
+    } else {
+      setSelectedCourse("");
+    }
   }, [college, selectedCollege]);
 
   if (isSuccess) {
@@ -495,7 +584,7 @@ const EditProfile = () => {
                       <Building className="text-gray-400 mr-3" />
                       {!isProfileCompleted ? (
                         <Select
-                          onValueChange={(e) => setSelectedCollege(e as any)}
+                          onValueChange={(e) => {setSelectedCollege(e as any); setSelectedCourse("");}}
                           value={selectedCollege}
                         >
                           <SelectTrigger className="bg-transparent border-none text-white w-full">
@@ -528,41 +617,55 @@ const EditProfile = () => {
             { user && user.role!='ALUMNI' && <FormField
               control={form.control}
               name="yearOfStudy"
-              render={({ field }) => (
-                <FormItem>
-                  <Label className="text-gray-300">Year of Study</Label>
-                  <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      <Timer className="text-gray-400 mr-3" />
-                      {!isProfileCompleted ? (
-                        <Select
-                          onValueChange={(e) => setSelectedYear(e as any)}
-                          value={selectedYear}
-                        >
-                          <SelectTrigger className="bg-transparent border-none text-white w-full">
-                            <SelectValue placeholder="Select Year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {[1, 2, 3, 4, 5, 6].map((year) => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          {...field}
-                          type="text"
-                          disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
-                        />
-                      )}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                // Determine allowed years based on selectedCourse
+                let allowedYears: number[] = [1, 2, 3, 4, 5];
+                if (
+                  /^B\.?\s*E(\b|[^a-zA-Z])/i.test(selectedCourse) ||
+                  /^B\.?\s*Tech/i.test(selectedCourse)
+                ) {
+                  allowedYears = [4];
+                } else if (
+                  /^B\.?\s*Sc/i.test(selectedCourse)
+                ) {
+                  allowedYears = [3];
+                }
+                return (
+                  <FormItem>
+                    <Label className="text-gray-300">Year of Study</Label>
+                    <FormControl>
+                      <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
+                        <Timer className="text-gray-400 mr-3" />
+                        {!isProfileCompleted ? (
+                          <Select
+                            onValueChange={(e) => { setSelectedYear(e as any) }}
+                            value={selectedYear}
+                          >
+                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                              <SelectValue placeholder="Select Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allowedYears.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            {...field}
+                            type="text"
+                            disabled
+                            className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          />
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />}
 
             {/* Course */}
@@ -641,7 +744,7 @@ const EditProfile = () => {
             <Book className="text-gray-400 mr-3" />
             {!isProfileCompleted ? (
               <Select
-                onValueChange={(e) => setSelectedCourse(e as any)}
+                onValueChange={(e) => {setSelectedCourse(e as any); setSelectedYear("");}}
                 value={selectedCourse}
               >
                 <SelectTrigger className="bg-transparent border-none text-white w-full">
