@@ -233,22 +233,6 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
 
       <p>• Plan your travel according to the event schedule.</p>
       <p>• Arrive well in advance of your event start times.</p>
-
-      <div className="mt-4">
-        <h4 className="text-[#80466E] font-semibold mb-2">Nearby PG/Hostel Options:</h4>
-        <ul className="list-disc list-inside text-gray-300 space-y-1">
-          <li>
-            <a href="https://maps.google.com?q=PG+near+event" target="_blank" rel="noopener noreferrer" className="text-violet-400 underline">
-              PG Option 1
-            </a>
-          </li>
-          <li>
-            <a href="https://maps.google.com?q=Hostel+near+event" target="_blank" rel="noopener noreferrer" className="text-violet-400 underline">
-              PG Option 2
-            </a>
-          </li>
-        </ul>
-      </div>
     </div>
   )}
     </div>
