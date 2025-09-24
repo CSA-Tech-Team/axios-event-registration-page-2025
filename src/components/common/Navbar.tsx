@@ -6,6 +6,16 @@ import {
   LogOut,
   SquareArrowOutUpRightIcon,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
 import { Mails } from "lucide-react";
 import { motion, AnimatePresence, easeOut } from "framer-motion";
 import LeaderBoardIcon from "@/assets/leaderboard.svg";
@@ -34,7 +44,7 @@ const NavBar: React.FC = () => {
   const [animateX, setAnimateX] = useState(0);
   const { getIsProfileCompleted } = useAuthStore();
   const { user } = useAuthStore.getState();
-
+  const [open, setOpen] = useState(false); // for logout dialog
   const navRef = useRef<HTMLDivElement | null>(null);
 
   //
@@ -269,20 +279,53 @@ const NavBar: React.FC = () => {
             {/* Login/Logout */}
             <div
               className={`flex items-center gap-2 px-4 py-2 cursor-pointer transition-all
-                ${activeIndex === 4 
+                ${activeIndex === 4
                   ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
                   : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
-                onClick={() => { handleClick(4); handleLogout(); }}
+              onClick={() => {
+                if (isAuthenticated()) {
+                  setOpen(true); // open confirm dialog
+                } else {
+                  navigate(ERouterPaths.SIGNIN);
+                }
+              }}
             >
               {isAuthenticated() ? (
-                <LogOut style={{ width: "20px", height: "20px" }} onClick={handleLogout} />
+                <LogOut style={{ width: "20px", height: "20px" }} />
               ) : (
                 <SquareArrowOutUpRightIcon style={{ width: "20px", height: "20px" }} />
               )}
-              <span className="hidden sm:hidden md:block text-sm font-medium" onClick={handleLogout}>
+              <span className="hidden sm:hidden md:block text-sm font-medium">
                 {isAuthenticated() ? "Logout" : "Signin"}
               </span>
             </div>
+
+            {/* Confirm Logout Dialog */}
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogContent className="bg-[#121212] shadow-lg text-white">
+                <DialogHeader>
+                  <DialogTitle>Confirm Logout</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to logout? You’ll need to sign in again to access your account.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="flex gap-4 justify-end mt-4">
+                  <Button
+                    variant="ghost"
+                    className="bg-gray-600 text-white"
+                    onClick={() => setOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="bg-red-600 text-white"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="absolute lg:left-[47%] md:left-[46%] sm:left-[49%] max-[640px]:left-[50%] 
