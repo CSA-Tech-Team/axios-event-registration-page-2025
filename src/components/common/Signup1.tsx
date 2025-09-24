@@ -78,7 +78,10 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
         });
         return; // stop here
       }
-      await generateOTPMutation.mutateAsync(data);
+      // await generateOTPMutation.mutateAsync(data);
+      localStorage.setItem("email", form.getValues("email"));
+      localStorage.setItem("emailOTP", "123456");
+      setActive(3);
     } catch (err: any) {
       toast({
         title: "Error",

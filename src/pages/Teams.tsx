@@ -56,7 +56,7 @@ const Teams = () => {
         title: "Success",
         description: (
           <pre className="mt-2 w-[340px] rounded-lg bg-white p-4">
-            <code className="text-black">Team {name} created successfully</code>
+            <code className="text-black">Team {name} created successfully and register any event with this team.</code>
           </pre>
         ),
       });
