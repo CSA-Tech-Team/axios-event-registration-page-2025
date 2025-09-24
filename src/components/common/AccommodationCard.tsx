@@ -231,8 +231,8 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
         </span>
       </div>
 
-      <p>• Plan your travel according to the event schedule.</p>
-      <p>• Arrive well in advance of your event start times.</p>
+      <p>• Plan your travel according to the event schedule .</p>
+      <p>• Arrive well in advance of your event start times .</p>
     </div>
   )}
     </div>
