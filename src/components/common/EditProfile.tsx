@@ -624,12 +624,19 @@ const EditProfile = () => {
                   /^B\.?\s*E(\b|[^a-zA-Z])/i.test(selectedCourse) ||
                   /^B\.?\s*Tech/i.test(selectedCourse)
                 ) {
-                  allowedYears = [4];
+                  allowedYears = [4, 5];
                 } else if (
                   /^B\.?\s*Sc/i.test(selectedCourse)
                 ) {
                   allowedYears = [3];
+                }else if (
+                  /^M\.?\s*E/i.test(selectedCourse) ||
+                  /^M\.?\s*Tech/i.test(selectedCourse) ||
+                  /^MCA/i.test(selectedCourse)
+                ) {
+                  allowedYears = [1,2];
                 }
+
                 return (
                   <FormItem>
                     <Label className="text-gray-300">Year of Study</Label>
