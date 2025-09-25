@@ -612,69 +612,6 @@ const EditProfile = () => {
                 </FormItem>
               )}
             />}
-
-            {/* Year of Study */}
-            { user && user.role!='ALUMNI' && <FormField
-              control={form.control}
-              name="yearOfStudy"
-              render={({ field }) => {
-                // Determine allowed years based on selectedCourse
-                let allowedYears: number[] = [1, 2, 3, 4, 5];
-                if (
-                  /^B\.?\s*E(\b|[^a-zA-Z])/i.test(selectedCourse) ||
-                  /^B\.?\s*Tech/i.test(selectedCourse)
-                ) {
-                  allowedYears = [4, 5];
-                } else if (
-                  /^B\.?\s*Sc/i.test(selectedCourse)
-                ) {
-                  allowedYears = [3];
-                }else if (
-                  /^M\.?\s*E/i.test(selectedCourse) ||
-                  /^M\.?\s*Tech/i.test(selectedCourse) ||
-                  /^MCA/i.test(selectedCourse)
-                ) {
-                  allowedYears = [1, 2, 3, 4, 5];
-                }
-
-                return (
-                  <FormItem>
-                    <Label className="text-gray-300">Year of Study</Label>
-                    <FormControl>
-                      <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                        <Timer className="text-gray-400 mr-3" />
-                        {!isProfileCompleted ? (
-                          <Select
-                            onValueChange={(e) => { setSelectedYear(e as any) }}
-                            value={selectedYear}
-                          >
-                            <SelectTrigger className="bg-transparent border-none text-white w-full">
-                              <SelectValue placeholder="Select Year" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {allowedYears.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Input
-                            {...field}
-                            type="text"
-                            disabled
-                            className="bg-transparent border-none text-white placeholder-gray-400 w-full"
-                          />
-                        )}
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                );
-              }}
-            />}
-
             {/* Course */}
             {user && user.role === "ALUMNI" ? (
   <FormField
@@ -780,6 +717,70 @@ const EditProfile = () => {
     )}
   />
 )}
+
+            {/* Year of Study */}
+            { user && user.role!='ALUMNI' && <FormField
+              control={form.control}
+              name="yearOfStudy"
+              render={({ field }) => {
+                // Determine allowed years based on selectedCourse
+                let allowedYears: number[] = [1, 2, 3, 4, 5];
+                if (
+                  /^B\.?\s*E(\b|[^a-zA-Z])/i.test(selectedCourse) ||
+                  /^B\.?\s*Tech/i.test(selectedCourse)
+                ) {
+                  allowedYears = [4, 5];
+                } else if (
+                  /^B\.?\s*Sc/i.test(selectedCourse)
+                ) {
+                  allowedYears = [3];
+                }else if (
+                  /^M\.?\s*E/i.test(selectedCourse) ||
+                  /^M\.?\s*Tech/i.test(selectedCourse) ||
+                  /^MCA/i.test(selectedCourse)
+                ) {
+                  allowedYears = [1, 2, 3, 4, 5];
+                }
+
+                return (
+                  <FormItem>
+                    <Label className="text-gray-300">Year of Study</Label>
+                    <FormControl>
+                      <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
+                        <Timer className="text-gray-400 mr-3" />
+                        {!isProfileCompleted ? (
+                          <Select
+                            onValueChange={(e) => { setSelectedYear(e as any) }}
+                            value={selectedYear}
+                          >
+                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                              <SelectValue placeholder="Select Year" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allowedYears.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Input
+                            {...field}
+                            type="text"
+                            disabled
+                            className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          />
+                        )}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />}
+
+            
 
 
             {/* Submit Button */}
