@@ -634,7 +634,7 @@ const EditProfile = () => {
                   /^M\.?\s*Tech/i.test(selectedCourse) ||
                   /^MCA/i.test(selectedCourse)
                 ) {
-                  allowedYears = [1,2];
+                  allowedYears = [1, 2, 3, 4, 5];
                 }
 
                 return (
