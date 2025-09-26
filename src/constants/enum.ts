@@ -10,6 +10,7 @@ export enum ERouterPaths {
   REGISTER = "/register",
   DASHBOARD = "/dashboard",
   LEADERBOARD = "/leaderboard",
+  EVENTSCHEDULE = "/event-schedule",
   NOT_FOUND = "/*",
   SERVER_ERROR = "/500",
 }

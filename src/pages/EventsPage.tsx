@@ -9,7 +9,7 @@ import useAxios from "@/hooks/useAxios";
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useAuthStore } from "@/store/ApiStates";
 import useWindowDimensions from "@/hooks/useWindowDimension";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Calendar } from "lucide-react";
 
 export const EventsPage = () => {
   const [showEvent, setShowEvent] = useState(false);
@@ -38,16 +38,27 @@ export const EventsPage = () => {
   return (
     <main className="h-full w-full flex justify-between flex-col">
       <div className="h-full p-4 flex flex-col gap-4  overflow-auto">
-        <div className="p-6 max-[500px]:px-2 h-1/6 text-white lg:pt-16  w-full bg-[#171717] z-10 text-3xl flex items-center gap-4">
-          {windowSize.width < 1024 && showEvent ? (
-            <div className="text-white " onClick={() => reset()}>
-              <ArrowLeft />
-              {/* <img src={back} alt="" className="w-4" /> */}
-            </div>
-          ) : (
-            ""
-          )}
-          <span>Events</span>
+        <div className="p-6 max-[500px]:px-2 h-1/6 text-white lg:pt-16  w-full bg-[#171717] z-10 text-3xl flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {windowSize.width < 1024 && showEvent ? (
+              <div className="text-white " onClick={() => reset()}>
+                <ArrowLeft />
+                {/* <img src={back} alt="" className="w-4" /> */}
+              </div>
+            ) : (
+              ""
+            )}
+            <span>Events</span>
+          </div>
+          
+          <button
+            onClick={() => navigate(ERouterPaths.EVENTSCHEDULE)}
+            className="flex items-center gap-2 bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5 rounded-md font-medium shadow-lg transition-all duration-700 ease-in-out text-xs sm:text-sm lg:text-base"
+            title="View Event Schedule"
+          >
+            <Calendar className="w-4 h-4 lg:w-5 lg:h-5" />
+            <span>Schedule</span>
+          </button>
         </div>
         <div className="flex flex-wrap overflow-auto scrollbar">
           <div

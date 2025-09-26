@@ -13,6 +13,7 @@ import Teams from "@/pages/Teams";
 import ProfileLayout from "@/components/common/ProfileOutlet";
 import Profile from "@/pages/Profile";
 import { Leaderboard } from "@/pages/Leaderboard";
+import EventSchedule from "@/pages/EventSchedule";
 const AxiosRoutes = () => {
   return (
     <Routes>
@@ -73,6 +74,7 @@ const AxiosRoutes = () => {
           }
         />
         <Route path={ERouterPaths.LEADERBOARD} element={<Leaderboard />} />
+        <Route path={ERouterPaths.EVENTSCHEDULE} element={<EventSchedule />} />
       </Route>
       <Route path={ERouterPaths.NOT_FOUND} element={<Notfound />} />
     </Routes>
