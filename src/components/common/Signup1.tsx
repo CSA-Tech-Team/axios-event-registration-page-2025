@@ -53,6 +53,10 @@ const Signup1: FC<Signup1Components> = ({ setActive }) => {
     onSuccess: () => {
       localStorage.setItem("email", form.getValues("email"));
       setActive(2);
+      toast({
+        title: "OTP Sent",
+        description: "Please check your inbox. If not received, check your spam folder too.",
+      });
     },
   });
 
