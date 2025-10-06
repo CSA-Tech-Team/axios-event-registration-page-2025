@@ -158,6 +158,8 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
         <p>• A security deposit of ₹300 must be paid in advance. The full amount will be refunded at checkout, provided no damages are incurred during the stay.</p>
         <p>• Any damages to property will be charged to the individual responsible.</p>
         <p>• Accommodation is provided on a shared basis. Room sharing will be done by the committee.</p>
+        <p>• Participants coming as a team must raise individual requests for accommodation. Team requests will not be considered collectively.</p>
+        <p></p>
         <div className="flex items-center gap-2 text-red-400 font-medium">
           <AlertCircle size={16} />
           <span>
