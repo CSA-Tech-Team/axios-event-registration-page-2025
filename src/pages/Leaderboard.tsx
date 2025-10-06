@@ -5,7 +5,7 @@ import lead2 from "@/assets/lead2.svg";
 import lead3 from "@/assets/lead3.svg";
 import crown from "@/assets/crown.svg";
 // import useAxios from "@/hooks/useAxios";
-import { socket } from "@/context/Socket";
+//import { socket } from "@/context/Socket";
 
 export const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -19,7 +19,7 @@ export const Leaderboard = () => {
     setIsConnected(false);
   }
 
-  useEffect(() => {
+  /*useEffect(() => {
     function onGetLeaderboard(value: any[]) {
       if (value && value.length > 2) {
         [value[0], value[1]] = [value[1], value[0]];
@@ -39,7 +39,7 @@ export const Leaderboard = () => {
       socket.off("disconnect", onDisconnect);
       socket.off("leaderboard", onGetLeaderboard);
     };
-  }, []);
+  }, []);*/
 
   return (
     // <></>

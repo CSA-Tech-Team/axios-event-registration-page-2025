@@ -6,6 +6,7 @@ import {
   Book,
   Building,
   Copy,
+  Drama,
   Mails,
   PhoneIcon,
   Timer,
@@ -126,13 +127,13 @@ const EditProfile = () => {
     mutationFn: async () => {
       if (user?.role === "USER") {
       console.log("Validating before phone OTP");
-      console.log({ formValues: form.getValues(), selectedCollege, selectedYear, selectedCourse });
+      console.log({ formValues: form.getValues() });
       if (
         !form.getValues("firstName") ||
         !form.getValues("lastName") ||
-        !selectedCollege ||
-        !selectedYear ||
-        selectedCourse==="" ||
+        !form.getValues("collegeName") ||
+        !form.getValues("yearOfStudy") ||
+        !form.getValues("degreeOfStudy") ||
         !form.getValues("phoneNumber")
       ) {
         console.log("Validation failed");
@@ -212,6 +213,7 @@ const EditProfile = () => {
   //     });
   //   },
   // });
+  /*
   const updateUserMutation = useMutation({
   mutationFn: async (data: any) => {
     // Validation only for USER role
@@ -272,11 +274,144 @@ const EditProfile = () => {
       description: `${error}`,
     });
   },
+});*/
+const updateUserMutation = useMutation({
+  mutationFn: async (data: any) => {
+    // Validation only for USER role
+    if (user?.role === "USER") {
+      if (
+        !data.firstName ||
+        !data.lastName ||
+        !data.collegeName ||
+        !data.yearOfStudy ||
+        !data.degreeOfStudy ||
+        !data.phoneNumber
+      ) {
+        console.log(data.firstName, data.lastName, data.collegeName, data.yearOfStudy, data.degreeOfStudy, data.phoneNumber);
+        toast({
+          title: "All fields are required",
+          description: "Please fill all the fields",
+        });
+        throw new Error("Please fill all the fields");
+      }
+    }
+
+    const response = await putWithAuth(ApiPaths.USER, {
+      profile: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        collegeName: user?.role === "ALUMNI" ? "PSG College of Technology" : data.collegeName,
+        yearOfStudy: user?.role === "ALUMNI" ? "NOT APPLICABLE" : data.yearOfStudy,
+        degreeOfStudy:
+          user?.role === "ALUMNI" ? "NOT APPLICABLE" : data.degreeOfStudy,
+        branchOfStudy: "DUMMY",
+        rollNumber:
+          user?.role === "ALUMNI"
+            ? rememberRollNo
+              ? data.rollNumber
+              : "NOT REMEMBERED"
+            : undefined,
+      },
+      gender: gender,
+      phoneNumber: "+91 " + data?.phoneNumber,
+    });
+
+    return response;
+  },
+  onSuccess: () => {
+    generatePhoneOtp.mutateAsync();
+    toast({
+      title: "Verify phone number",
+      description: "Verify phone number",
+    });
+  },
+  onError: (error) => {
+    console.log(error);
+    toast({
+      title: "Uh oh! Something went wrong.",
+      description: `${error}`,
+    });
+  },
 });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
+  /*function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log(data);
     updateUserMutation.mutateAsync(data as any);
+  }*/
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    // Handle Others case: replace college and course
+    //Check whether phone number has 10 digits and is a number
+    if (data.phoneNumber && (data.phoneNumber.length !== 10 || isNaN(data?.phoneNumber))) {
+      toast({
+        title: "Invalid phone number",
+        description: "Phone number must be 10 digits long and numeric",
+      });
+      return;
+    }
+
+    if (selectedCollege === "Others") {
+      form.setValue("collegeName", otherCollege.trim());
+      data.collegeName = otherCollege.trim();
+    } else {
+      data.collegeName = selectedCollege;
+    }
+
+    if (selectedCollege === "Others") {
+      form.setValue("degreeOfStudy", otherCourse.trim());
+      data.degreeOfStudy = otherCourse.trim();
+    } else {
+      data.degreeOfStudy = selectedCourse;
+    }
+
+    data.yearOfStudy = selectedYear;
+
+    console.log("Validating before phone OTP");
+    console.log({ formValues: data });
+
+    // 🧠 Validation only if 'Others' is selected
+    if (selectedCollege === "Others" || selectedCourse === "Others") {
+      const course = (data.degreeOfStudy || "").toLowerCase().trim();
+      const year = parseInt(selectedYear);
+
+      if (/^b\s*\.?\s*sc/i.test(course)) {
+        if (year <= 1) {
+          toast({
+            title: "Invalid Year",
+            description: "For B.Sc, year of study must be greater than 1.",
+            variant: "destructive",
+          });
+          console.log("Validation failed");
+          return;
+        }
+      } else if (/^b\s*\.?\s*tech/i.test(course) || /^b\s*\.?\s*e/i.test(course)) {
+        if (year <= 1) {
+          toast({
+            title: "Invalid Year",
+            description: "For B.Tech or B.E, year of study must be greater than 1.",
+            variant: "destructive",
+          });
+          console.log("Validation failed");
+          return;
+        }
+      } else if (/^m\s*\.?\s*sc/i.test(course) || /^mba/i.test(course)) {
+        if (year < 1 || year > 5) {
+          toast({
+            title: "Invalid Year",
+            description: "For M.Sc or MBA, year of study must be between 1 and 5.",
+            variant: "destructive",
+          });
+          console.log("Validation failed");
+          return;
+        }
+      }
+    }
+
+    // 🟢 Proceed to mutation only after validation passes
+    console.log("Validation passed, submitting to updateUserMutation");
+    // Proceed with update mutation
+    await updateUserMutation.mutateAsync(data as any);
   }
+
 
   const verifyOTP = useMutation({
     mutationFn: async () => {
@@ -314,7 +449,7 @@ const EditProfile = () => {
         return;
       }
 
-      const referralLink = `http://10.1.234.4:3000/signup?referralCode=${referralCode}`;
+      const referralLink = `https://app.axios.psgtech.ac.in/signup?referralCode=${referralCode}`;
 
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(referralLink);
@@ -357,7 +492,8 @@ const EditProfile = () => {
     user?.profile?.yearOfStudy ?? ""
   );
   const [courses, setCourses] = useState<string[]>();
-
+  const [otherCollege, setOtherCollege] = useState<string>("");
+  const [otherCourse, setOtherCourse] = useState<string>("");
 
   const { isSuccess } = useQuery({
     queryKey: ["college"],
@@ -385,6 +521,12 @@ const EditProfile = () => {
       setSelectedCourse("");
     }
   }, [college, selectedCollege]);
+
+  useEffect(() => {
+  form.setValue("collegeName", selectedCollege === "Others" ? otherCollege : selectedCollege);
+  form.setValue("degreeOfStudy", selectedCourse === "Others" ? otherCourse : selectedCourse);
+  form.setValue("yearOfStudy", selectedYear);
+  }, [selectedCollege, selectedCourse, selectedYear, otherCollege, otherCourse]);
 
   if (isSuccess) {
     return (
@@ -414,7 +556,7 @@ const EditProfile = () => {
                       <PhoneIcon className="text-gray-400 mr-3" />
                       <Input
                         {...field}
-                        type="text"
+                        type="text" 
                         placeholder="Enter your phone number"
                         required
                         disabled={isProfileCompleted}
@@ -580,24 +722,36 @@ const EditProfile = () => {
                 <FormItem>
                   <Label className="text-gray-300">College</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      <Building className="text-gray-400 mr-3" />
+                    <div className="flex flex-col items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
+                      {/*<Building className="text-gray-400 mr-3" />*/}
                       {!isProfileCompleted ? (
-                        <Select
-                          onValueChange={(e) => {setSelectedCollege(e as any); setSelectedCourse("");}}
-                          value={selectedCollege}
-                        >
-                          <SelectTrigger className="bg-transparent border-none text-white w-full">
-                            <SelectValue placeholder="Select College" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {college?.map((elt: any) => (
-                              <SelectItem key={elt.name} value={elt.name}>
-                                {elt.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <>
+                          <Select
+                            onValueChange={(e) => {setSelectedCollege(e as any); setSelectedCourse("");}}
+                            value={selectedCollege}
+                          >
+                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                              <SelectValue placeholder="Select College" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {college?.map((elt: any) => (
+                                <SelectItem key={elt.name} value={elt.name}>
+                                  {elt.name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="Others">Others</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {selectedCollege === "Others" && (
+                            <Input
+                              value={otherCollege}
+                              autoFocus={true}
+                              onChange={(e) => { setOtherCollege(e.target.value); setSelectedCourse(""); }} 
+                              placeholder="Enter your college"
+                              className="flex mt-2 bg-[#1f1f1f] text-white"
+                            />
+                          )}
+                        </>
                       ) : (
                         <Input
                           {...field}
@@ -614,109 +768,119 @@ const EditProfile = () => {
             />}
             {/* Course */}
             {user && user.role === "ALUMNI" ? (
-  <FormField
-    control={form.control}
-    name="rollNumber"
-    render={({ field }) => (
-      <FormItem>
-        <Label className="text-gray-300 flex items-center">
-          { !isProfileCompleted  ? "Do you remember your Roll No? 😅":"Roll Number"}
-        </Label>
-        <FormControl>
-          <div className="flex flex-col gap-3 bg-[#1f1f1f] rounded-xl px-4 py-3">
-            {!isProfileCompleted ? (
-              <>
-                {/* Funny toggle */}
-                <div className="flex gap-4 items-center">
-                  <button
-                    type="button"
-                    onClick={() => setRememberRollNo(true)}
-                    className={`px-3 py-2 rounded-lg ${
-                      rememberRollNo
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-700 text-gray-300"
-                    }`}
-                  >
-                    Yes 😎
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setRememberRollNo(false)}
-                    className={`px-3 py-2 rounded-lg ${
-                      rememberRollNo === false
-                        ? "bg-red-600 text-white"
-                        : "bg-gray-700 text-gray-300"
-                    }`}
-                  >
-                    No 😅
-                  </button>
-                </div>
+        <FormField
+          control={form.control}
+          name="rollNumber"
+          render={({ field }) => (
+            <FormItem>
+              <Label className="text-gray-300 flex items-center">
+                { !isProfileCompleted  ? "Do you remember your Roll No? 😅":"Roll Number"}
+              </Label>
+              <FormControl>
+                <div className="flex flex-col gap-3 bg-[#1f1f1f] rounded-xl px-4 py-3">
+                  {!isProfileCompleted ? (
+                    <>
+                      {/* Funny toggle */}
+                      <div className="flex gap-4 items-center">
+                        <button
+                          type="button"
+                          onClick={() => setRememberRollNo(true)}
+                          className={`px-3 py-2 rounded-lg ${
+                            rememberRollNo
+                              ? "bg-green-600 text-white"
+                              : "bg-gray-700 text-gray-300"
+                          }`}
+                        >
+                          Yes 😎
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setRememberRollNo(false)}
+                          className={`px-3 py-2 rounded-lg ${
+                            rememberRollNo === false
+                              ? "bg-red-600 text-white"
+                              : "bg-gray-700 text-gray-300"
+                          }`}
+                        >
+                          No 😅
+                        </button>
+                      </div>
 
-                {/* Show input only if they said Yes */}
-                {rememberRollNo && (
-                  <Input
-                    {...field}
-                    type="text"
-                    placeholder="Enter your Roll No"
-                    className="bg-transparent border-none text-white placeholder-gray-400 w-full mt-2"
-                  />
-                )}
-              </>
-            ) : (
-              <Input
-                {...field}
-                type="text"
-                disabled
-                className="bg-transparent border-none text-white placeholder-gray-400 w-full"
-              />
-            )}
-          </div>
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-) : (
-  <FormField
-    control={form.control}
-    name="degreeOfStudy"
-    render={({ field }) => (
-      <FormItem>
-        <Label className="text-gray-300">Course</Label>
-        <FormControl>
-          <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-            <Book className="text-gray-400 mr-3" />
-            {!isProfileCompleted ? (
-              <Select
-                onValueChange={(e) => {setSelectedCourse(e as any); setSelectedYear("");}}
-                value={selectedCourse}
-              >
-                <SelectTrigger className="bg-transparent border-none text-white w-full">
-                  <SelectValue placeholder="Select Course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses?.map((elt: any) => (
-                    <SelectItem key={elt} value={elt}>
-                      {elt}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Input
-                {...field}
-                type="text"
-                disabled
-                className="bg-transparent border-none text-white placeholder-gray-400 w-full"
-              />
-            )}
-          </div>
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-)}
+                      {/* Show input only if they said Yes */}
+                      {rememberRollNo && (
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder="Enter your Roll No"
+                          className="bg-transparent border-none text-white placeholder-gray-400 w-full mt-2"
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <Input
+                      {...field}
+                      type="text"
+                      disabled
+                      className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                    />
+                  )}
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+          ) : (
+            <FormField
+              control={form.control}
+              name="degreeOfStudy"
+              render={({ field }) => (
+                <FormItem>
+                  <Label className="text-gray-300">Course</Label>
+                  <FormControl>
+                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
+                      <Book className="text-gray-400 mr-3" />
+                      {!isProfileCompleted ? (
+                        <>
+                        {selectedCollege === "Others" ? (
+                          <Input
+                            value={otherCourse}
+                            onChange={(e) => setOtherCourse(e.target.value)}
+                            placeholder="Enter your course name with degree"
+                            className="mt-2 bg-[#1f1f1f] text-white"
+                          />
+                        ) : (
+                          <Select
+                            onValueChange={(e) => {setSelectedCourse(e as any); setSelectedYear("");}}
+                            value={selectedCourse}
+                          >
+                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                            <SelectValue placeholder="Select Course" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {courses?.map((elt: any) => (
+                              <SelectItem key={elt} value={elt}>
+                                {elt}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) }
+                      </> ): (
+                        <Input
+                          {...field}
+                          type="text"
+                          disabled
+                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                        />
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
             {/* Year of Study */}
             { user && user.role!='ALUMNI' && <FormField
@@ -729,16 +893,25 @@ const EditProfile = () => {
                   /^B\.?\s*E(\b|[^a-zA-Z])/i.test(selectedCourse) ||
                   /^B\.?\s*Tech/i.test(selectedCourse)
                 ) {
-                  allowedYears = [4, 5];
+                  allowedYears = [2, 3, 4, 5];
                 } else if (
                   /^B\.?\s*Sc/i.test(selectedCourse)
                 ) {
-                  allowedYears = [3];
-                }else if (
+                  allowedYears = [2, 3];
+                } else if (
                   /^M\.?\s*E/i.test(selectedCourse) ||
                   /^M\.?\s*Tech/i.test(selectedCourse) ||
                   /^MCA/i.test(selectedCourse)
-                ) {
+                ) 
+                {
+                  allowedYears = [1, 2, 3, 4, 5]; 
+                } else if (
+                  /^MBA/i.test(selectedCourse)
+                ) { 
+                  allowedYears = [1, 2];
+                }
+                else
+                {
                   allowedYears = [1, 2, 3, 4, 5];
                 }
 
