@@ -339,9 +339,50 @@ const updateUserMutation = useMutation({
     updateUserMutation.mutateAsync(data as any);
   }*/
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    // Handle Others case: replace college and course
-    //Check whether phone number has 10 digits and is a number
-    if (data.phoneNumber && (data.phoneNumber.length !== 10 || isNaN(data?.phoneNumber))) {
+    // Assign collegeName and degreeOfStudy based on selection, handling "Others"
+    let finalCollegeName = selectedCollege;
+    let finalDegreeOfStudy = selectedCourse;
+
+    if (selectedCollege === "Others") {
+      finalCollegeName = otherCollege.trim();
+    }
+    // If course "Others" is selected (either via college or course dropdown)
+    if (selectedCollege === "Others" || selectedCourse === "Others") {
+      finalDegreeOfStudy = otherCourse.trim();
+    }
+
+    // Always trim for consistency
+    finalCollegeName = (finalCollegeName || "").trim();
+    finalDegreeOfStudy = (finalDegreeOfStudy || "").trim();
+
+    // Update form values so UI is in sync
+    form.setValue("collegeName", finalCollegeName);
+    form.setValue("degreeOfStudy", finalDegreeOfStudy);
+    form.setValue("yearOfStudy", selectedYear);
+
+    // Assign to data object for validation and submission
+    data.collegeName = finalCollegeName;
+    data.degreeOfStudy = finalDegreeOfStudy;
+    data.yearOfStudy = selectedYear;
+
+    //whether all fields are filled
+    if (
+      !data.firstName ||
+      !data.lastName ||
+      !data.collegeName ||
+      !data.yearOfStudy ||
+      !data.degreeOfStudy ||
+      !data.phoneNumber
+    ) {
+      toast({
+        title: "All fields are required",
+        description: "Please fill all the fields",
+      });
+      return;
+    }
+
+    // Validate phone number
+    if (data.phoneNumber && (data.phoneNumber.length !== 10 || isNaN(data.phoneNumber))) {
       toast({
         title: "Invalid phone number",
         description: "Phone number must be 10 digits long and numeric",
@@ -349,65 +390,38 @@ const updateUserMutation = useMutation({
       return;
     }
 
-    if (selectedCollege === "Others") {
-      form.setValue("collegeName", otherCollege.trim());
-      data.collegeName = otherCollege.trim();
-    } else {
-      data.collegeName = selectedCollege;
-    }
-
-    if (selectedCollege === "Others") {
-      form.setValue("degreeOfStudy", otherCourse.trim());
-      data.degreeOfStudy = otherCourse.trim();
-    } else {
-      data.degreeOfStudy = selectedCourse;
-    }
-
-    data.yearOfStudy = selectedYear;
-
-    console.log("Validating before phone OTP");
-    console.log({ formValues: data });
-
-    // 🧠 Validation only if 'Others' is selected
-    if (selectedCollege === "Others" || selectedCourse === "Others") {
-      const course = (data.degreeOfStudy || "").toLowerCase().trim();
-      const year = parseInt(selectedYear);
-
-      if (/^b\s*\.?\s*sc/i.test(course)) {
-        if (year <= 1) {
-          toast({
-            title: "Invalid Year",
-            description: "For B.Sc, year of study must be greater than 1.",
-            variant: "destructive",
-          });
-          console.log("Validation failed");
-          return;
-        }
-      } else if (/^b\s*\.?\s*tech/i.test(course) || /^b\s*\.?\s*e/i.test(course)) {
-        if (year <= 1) {
-          toast({
-            title: "Invalid Year",
-            description: "For B.Tech or B.E, year of study must be greater than 1.",
-            variant: "destructive",
-          });
-          console.log("Validation failed");
-          return;
-        }
-      } else if (/^m\s*\.?\s*sc/i.test(course) || /^mba/i.test(course)) {
-        if (year < 1 || year > 5) {
-          toast({
-            title: "Invalid Year",
-            description: "For M.Sc or MBA, year of study must be between 1 and 5.",
-            variant: "destructive",
-          });
-          console.log("Validation failed");
-          return;
-        }
+    // Validation for year of study based on course
+    const course = (data.degreeOfStudy || "").toLowerCase();
+    const year = parseInt(data.yearOfStudy || "0");
+    if (/^b\s*\.?\s*sc/i.test(course)) {
+      if (year <= 1) {
+        toast({
+          title: "Invalid Year",
+          description: "For B.Sc, year of study must be greater than 1.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (/^b\s*\.?\s*tech/i.test(course) || /^b\s*\.?\s*e/i.test(course)) {
+      if (year <= 1) {
+        toast({
+          title: "Invalid Year",
+          description: "For B.Tech or B.E, year of study must be greater than 1.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (/^m\s*\.?\s*sc/i.test(course) || /^mba/i.test(course)) {
+      if (year < 1 || year > 5) {
+        toast({
+          title: "Invalid Year",
+          description: "For M.Sc or MBA, year of study must be between 1 and 5.",
+          variant: "destructive",
+        });
+        return;
       }
     }
 
-    // 🟢 Proceed to mutation only after validation passes
-    console.log("Validation passed, submitting to updateUserMutation");
     // Proceed with update mutation
     await updateUserMutation.mutateAsync(data as any);
   }
@@ -766,7 +780,7 @@ const updateUserMutation = useMutation({
                 </FormItem>
               )}
             />}
-            {/* Course */}
+            {/* Course /}
             {user && user.role === "ALUMNI" ? (
         <FormField
           control={form.control}
@@ -780,7 +794,7 @@ const updateUserMutation = useMutation({
                 <div className="flex flex-col gap-3 bg-[#1f1f1f] rounded-xl px-4 py-3">
                   {!isProfileCompleted ? (
                     <>
-                      {/* Funny toggle */}
+                      {/* Funny toggle /}
                       <div className="flex gap-4 items-center">
                         <button
                           type="button"
@@ -806,7 +820,7 @@ const updateUserMutation = useMutation({
                         </button>
                       </div>
 
-                      {/* Show input only if they said Yes */}
+                      {/* Show input only if they said Yes /}
                       {rememberRollNo && (
                         <Input
                           {...field}
@@ -867,6 +881,77 @@ const updateUserMutation = useMutation({
                         </Select>
                       ) }
                       </> ): (
+                        <Input
+                          {...field}
+                          type="text"
+                          
+                          disabled
+                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                        />
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )} */}
+
+          {user && user.role !== "ALUMNI" && (
+            <FormField
+              control={form.control}
+              name="degreeOfStudy"
+              render={({ field }) => (
+                <FormItem>
+                  <Label className="text-gray-300">Course</Label>
+                  <FormControl>
+                    <div className="flex flex-col bg-[#1f1f1f] rounded-xl px-4 py-3">
+                      {!isProfileCompleted ? (
+                        <>
+                          {/* Case 1: If College is 'Others' → custom course input */}
+                          {selectedCollege === "Others" ? (
+                            <Input
+                              value={otherCourse}
+                              onChange={(e) => setOtherCourse(e.target.value)}
+                              placeholder="Enter your course name"
+                              className="bg-[#1f1f1f] text-white"
+                            />
+                          ) : (
+                            <>
+                              {/* Case 2: Show dropdown of available courses + “Others” */}
+                              <Select
+                                onValueChange={(value) => {
+                                  setSelectedCourse(value);
+                                  if (value !== "Others") setOtherCourse("");
+                                }}
+                                value={selectedCourse}
+                              >
+                                <SelectTrigger className="bg-transparent border-none text-white w-full">
+                                  <SelectValue placeholder="Select Course" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {courses?.map((course) => (
+                                    <SelectItem key={course} value={course}>
+                                      {course}
+                                    </SelectItem>
+                                  ))}
+                                  <SelectItem value="Others">Others</SelectItem>
+                                </SelectContent>
+                              </Select>
+
+                              {/* If “Others” selected for course */}
+                              {selectedCourse === "Others" && (
+                                <Input
+                                  value={otherCourse}
+                                  onChange={(e) => setOtherCourse(e.target.value)}
+                                  placeholder="Enter your course name"
+                                  className="mt-2 bg-[#1f1f1f] text-white"
+                                />
+                              )}
+                            </>
+                          )}
+                        </>
+                      ) : (
                         <Input
                           {...field}
                           type="text"
