@@ -742,7 +742,7 @@ const updateUserMutation = useMutation({
                               <SelectItem value="Others">Others</SelectItem>
                             </SelectContent>
                           </Select>
-                          {selectedCollege === "Others" && (
+                          {selectedCollege === "Others"  && (
                             <Input
                               value={otherCollege}
                               autoFocus={true}
