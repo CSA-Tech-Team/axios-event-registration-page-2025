@@ -739,7 +739,7 @@ const updateUserMutation = useMutation({
                                   {elt.name}
                                 </SelectItem>
                               ))}
-                              <SelectItem value="Others">Others</SelectItem>
+                              {/*<SelectItem value="Others">Others</SelectItem>*/}
                             </SelectContent>
                           </Select>
                           {selectedCollege === "Others"  && (
