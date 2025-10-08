@@ -9,15 +9,15 @@ import crown from "@/assets/crown.svg";
 
 export const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  //const [isConnected, setIsConnected] = useState(socket.connected);
 
-  function onConnect() {
-    setIsConnected(true);
-  }
+  // function onConnect() {
+  //   setIsConnected(true);
+  // }
 
-  function onDisconnect() {
-    setIsConnected(false);
-  }
+  // function onDisconnect() {
+  //   setIsConnected(false);
+  // }
 
   /*useEffect(() => {
     function onGetLeaderboard(value: any[]) {
