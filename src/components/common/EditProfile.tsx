@@ -295,8 +295,8 @@ const updateUserMutation = useMutation({
         throw new Error("Please fill all the fields");
       }
     }
-
-    const response = await putWithAuth(ApiPaths.USER, {
+    console.log("Data",data);
+    /*const response = await putWithAuth(ApiPaths.USER, {
       profile: {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -331,8 +331,52 @@ const updateUserMutation = useMutation({
       title: "Uh oh! Something went wrong.",
       description: `${error}`,
     });
+  },*/
+  const response = await putWithAuth(ApiPaths.USER, {
+      profile: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        collegeName:
+          user?.role === "ALUMNI"
+            ? "PSG College of Technology"
+            : data.collegeName,
+        yearOfStudy:
+          user?.role === "ALUMNI" ? "NOT APPLICABLE" : data.yearOfStudy,
+        degreeOfStudy:
+          user?.role === "ALUMNI" ? "NOT APPLICABLE" : data.degreeOfStudy,
+        branchOfStudy: "DUMMY",
+        rollNumber:
+          user?.role === "ALUMNI"
+            ? rememberRollNo
+              ? data.rollNumber
+              : "NOT REMEMBERED"
+            : undefined,
+      },
+      gender: gender,
+      phoneNumber: "+91 " + data?.phoneNumber,
+    });
+
+    return response;
   },
-});
+  onSuccess: () => {
+    // 🚫 Removed OTP generation
+    // ✅ Just show a success toast and mark profile completed
+    setIsProfileCompleted(true);
+    queryClient.invalidateQueries("user" as any);
+    console.log('User successfully registered..');
+    toast({
+      title: "Profile Updated Successfully 🎉",
+      description: "Your profile has been updated successfully.",
+    });
+  },
+  onError: (error) => {
+    console.log(error);
+    toast({
+      title: "Uh oh! Something went wrong.",
+      description: `${error}`,
+      variant: "destructive",
+    });
+}});
 
   /*function onSubmit(data: z.infer<typeof FormSchema>) {
     console.log(data);
