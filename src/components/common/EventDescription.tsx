@@ -459,6 +459,16 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     }
   }, [getRegisteredEvents, getOwnedTeams, eventId]);
 
+  useEffect(() => {
+    toast({
+      title: "Event Registration Closed",
+      description:
+        "Online registrations are closed. You can still participate through on-spot registration by visiting the college.",
+      variant: "destructive", // or "default" if you prefer normal color
+      duration: 8000, // show for 8 seconds
+    });
+  }, []);
+
   // Register team mutation
   const registerTeamMutation = useMutation({
     mutationFn: async () => {
@@ -538,7 +548,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
         </div>
 
         {/* Register Button + Dialog */}
-        {user && user?.role !== "ALUMNI" && (
+        {user && isRegistered && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
