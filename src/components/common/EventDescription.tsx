@@ -459,7 +459,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     }
   }, [getRegisteredEvents, getOwnedTeams, eventId]);
 
-  /*useEffect(() => {
+  useEffect(() => {
     toast({
       title: "Event Registration Closed",
       description:
@@ -467,7 +467,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
       variant: "destructive", // or "default" if you prefer normal color
       duration: 8000, // show for 8 seconds
     });
-  }, []);*/
+  }, []);
 
   // Register team mutation
   const registerTeamMutation = useMutation({
@@ -548,7 +548,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
         </div>
 
         {/* Register Button + Dialog */}
-        {user && user?.role !== 'ALUMNI' && (
+        {user && isRegistered && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
