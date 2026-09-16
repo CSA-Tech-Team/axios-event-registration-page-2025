@@ -56,8 +56,10 @@ export enum ApiPaths {
   //ACCOMODATION
   ACCOMODATION = "/me/accommodation",
   //LEADERBOARD
-  LEADERBOARD = "ws://localhost:9198/leaderboard"
-  //LEADERBOARD = "https://darpanet.amcspsgtech.in/leaderboard",
+  LEADERBOARD = "/leaderboard",
+  LEADERBOARD_USERS = "/leaderboard/users",
+  LEADERBOARD_TEAMS = "/leaderboard/teams",
+  LEADERBOARD_COLLEGES = "/leaderboard/colleges",
 }
 
 export enum LocalStorageEnum {
