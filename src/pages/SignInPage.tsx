@@ -1,217 +1,114 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-//import pillar from "../assets/loginComp.svg";
-//import emblem from "../assets/axiosEmblemGold.png";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import emblem from "@/assets/axiosemblem.png";
-import { Link, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import useAxios from "@/hooks/useAxios";
-import { ApiPaths, ERouterPaths } from "@/constants/enum";
-import { useAuthStore } from "@/store/ApiStates";
-import { useToast } from "@/hooks/use-toast";
-import { Mails, LockKeyhole, EyeOff, Eye } from "lucide-react";
-import { useState } from "react";
+import GoogleIcon from "@/components/common/GoogleIcon";
+import { ERouterPaths } from "@/constants/enum";
+import { signInWithGoogle, useSession } from "@/lib/auth-client";
 
-// ✅ Fix Schema
-const FormSchema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().optional(), // just optional, no min validation here
-});
+const ERROR_MESSAGES: Record<string, string> = {
+  oauth: "Google sign-in was cancelled or failed. Please try again.",
+  access_denied: "You declined the Google permission request.",
+  session: "Your session has expired. Please sign in again.",
+};
 
-// ✅ Extra schema for password validation
-const PasswordSchema = z.object({
-  password: z.string().min(1, "Password required"),
-});
-
+/**
+ * Google is the only way in. The email/password + OTP flow this page used to
+ * run is retired on the API (LEGACY_AUTH_ENABLED=false), so its routes are not
+ * even mounted.
+ *
+ * /signin and /signup both land here and do the same thing: with Google there
+ * is no separate registration step, and a first-time account is created on the
+ * way back. Both paths are kept because the landing page links to each.
+ */
 const SignIn = () => {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-
-  const { setAuthToken } = useAuthStore();
   const navigate = useNavigate();
-  const { postWithoutAuth } = useAxios();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const { data: session, isPending } = useSession();
 
-  const [step, setStep] = useState<"email" | "password">("email");
-  const [showPassword, setShowPassword] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const checkEmailMutation = useMutation({
-    mutationFn: async (data: { email: string }) => {
-      const response = await postWithoutAuth(ApiPaths.CHECK_EMAIL, data);
-      return response.data; // 👈 ensure we only return the JSON body
-    },
-    onSuccess: (result) => {
-      if (result.exists) {
-        // ✅ Email exists → move to password step
-        setStep("password");
-      } else {
-        // ❌ Email not found → show toast
-        toast({
-          title: "Invalid Email",
-          description: "This email is not registered. Please sign up.",
-          variant: "destructive",
-        });
-      }
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error?.response?.data?.message || "Something went wrong",
-        variant: "destructive",
-      });
-    },
-  });
+  const errorParam = searchParams.get("error");
 
-  const signinMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof FormSchema>) => {
-      return await postWithoutAuth(ApiPaths.LOGIN, data);
-    },
-    onSuccess: (response: any) => {
-      const token = response?.data.token;
-      setAuthToken(token);
-      navigate(ERouterPaths.PROFILE);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Uh oh! Something went wrong.",
-        description: error?.response?.data?.message || "Login failed",
-      });
-    },
-  });
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (step === "email") {
-      checkEmailMutation.mutate({ email: data.email });
-    } else {
-      // ✅ Run password validation separately
-      const parsed = PasswordSchema.safeParse({ password: data.password });
-      if (!parsed.success) {
-        form.setError("password", {
-          type: "manual",
-          message: parsed.error.errors[0].message,
-        });
-        return;
-      }
-      signinMutation.mutate({
-        email: data.email,
-        password: data.password!,
-      });
+  useEffect(() => {
+    if (errorParam) {
+      setError(ERROR_MESSAGES[errorParam] ?? "Something went wrong signing in.");
     }
-  }
+  }, [errorParam]);
+
+  /**
+   * The landing page links here with ?referralCode=... (including the alumni
+   * link). The Google redirect would otherwise drop it, so it is parked for
+   * the trip and read back after the callback.
+   *
+   * NOTE: nothing applies it yet. Referrals and the alumni role were handled
+   * only by the legacy register route, which is retired - the API needs an
+   * endpoint to claim a code for the signed-in user before this does anything.
+   */
+  useEffect(() => {
+    const referralCode = searchParams.get("referralCode");
+    if (referralCode) {
+      try {
+        sessionStorage.setItem("axios.auth.referralCode", referralCode);
+      } catch {
+        /* private mode - the code is simply lost, which is what happens today */
+      }
+    }
+  }, [searchParams]);
+
+  // Already signed in - don't make them do it twice.
+  useEffect(() => {
+    if (!isPending && session) navigate(ERouterPaths.PROFILE, { replace: true });
+  }, [isPending, session, navigate]);
+
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setIsRedirecting(true);
+    try {
+      await signInWithGoogle(
+        `${window.location.origin}${ERouterPaths.AUTH_CALLBACK}`,
+        `${window.location.origin}${ERouterPaths.SIGNIN}?error=oauth`,
+      );
+    } catch {
+      setError("Could not reach the sign-in service. Please try again.");
+      setIsRedirecting(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center h-screen w-full bg-[#171717] text-white px-6">
-      {/* Logo */}
       <div className="flex flex-col items-center mb-10">
         <img src={emblem} alt="Logo" className="h-40 w-40 mb-2" />
-        <h1 className="text-3xl font-bold text-[#EFAD8B]">Welcome Back</h1>
-        <p className="text-sm text-gray-400">Sign in to continue</p>
+        <h1 className="text-3xl font-bold text-[#EFAD8B]">Welcome to Axios</h1>
+        <p className="text-sm text-gray-400">
+          Use your Google account to continue
+        </p>
       </div>
 
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="w-full max-w-sm space-y-6"
+      {error && (
+        <div
+          role="alert"
+          className="w-full max-w-sm mb-6 rounded-md border border-[#C02727]/60 bg-[#C02727]/20 px-4 py-3 text-center text-sm"
         >
-          {step === "email" && (
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="bg-[#232323] rounded-md flex items-center font-lato">
-                      <div className="p-4">
-                        <Mails />
-                      </div>
-                      <Input
-                        placeholder="Enter your email"
-                        type="email"
-                        required
-                        autoFocus
-                        className="py-4 placeholder:text-[#B2B2B2] outline-none w-full border-0 bg-transparent"
-                        {...field}
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+          {error}
+        </div>
+      )}
 
-          {step === "password" && (
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="bg-[#232323] rounded-md flex items-center font-lato">
-                      <div className="p-4">
-                        <LockKeyhole />
-                      </div>
-                      <Input
-                        placeholder="Enter your password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        autoFocus
-                        className="py-4 placeholder:text-[#B2B2B2] outline-none w-full border-0 bg-transparent"
-                        {...field}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="p-4 text-gray-400"
-                      >
-                        {showPassword ? <EyeOff /> : <Eye />}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        disabled={isRedirecting || isPending}
+        className="w-full max-w-sm flex items-center justify-center gap-3 rounded-md bg-white px-4 py-4 font-semibold text-[#171717] transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <GoogleIcon className="h-5 w-5" />
+        {isRedirecting ? "Redirecting to Google…" : "Continue with Google"}
+      </button>
 
-          <Button
-            type="submit"
-            className="w-full bg-[#512F5C] hover:bg-[#4b2570] text-white p-6"
-            disabled={checkEmailMutation.isLoading || signinMutation.isLoading}
-          >
-            {step === "email"
-              ? checkEmailMutation.isLoading
-                ? "Checking..."
-                : "Next"
-              : signinMutation.isLoading
-              ? "Signing in..."
-              : "Sign in"}
-          </Button>
-        </form>
-      </Form>
-
-      <span className="flex gap-1 mt-6 text-sm">
-        Don&apos;t have an account?
-        <Link to={ERouterPaths.SIGNUP}>
-          <div className="text-[#80466E] underline">Signup</div>
-        </Link>
-      </span>
+      <p className="mt-6 max-w-sm text-center text-xs text-gray-500">
+        New here? Signing in with Google creates your Axios account
+        automatically. You will be asked to complete your profile afterwards.
+      </p>
     </div>
   );
 };

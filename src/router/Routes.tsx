@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute, { LoginProtectedRoute } from "./ProtectedRoutes";
 import SignIn from "@/pages/SignInPage";
 import SignUp from "@/pages/SignUpPage";
+import AuthCallbackPage from "@/pages/AuthCallbackPage";
 import { EventsPage } from "@/pages/EventsPage";
 import { EventDetailsPage } from "@/pages/EventDetailsPage";
 import Notfound from "@/pages/404NotFound";
@@ -25,6 +26,9 @@ const AxiosRoutes = () => {
           </LoginProtectedRoute>
         }
       />
+      {/* Where Google sends the browser back to. Unguarded: the visitor is
+          mid-sign-in, so neither guard applies yet. */}
+      <Route path={ERouterPaths.AUTH_CALLBACK} element={<AuthCallbackPage />} />
       <Route
         path={ERouterPaths.SIGNUP}
         element={

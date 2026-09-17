@@ -24,6 +24,7 @@ import useAxios from "@/hooks/useAxios";
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import WaitingRoom from "@/components/common/WaitingRoom";
 
 interface EventDescriptionProps {
   data: any;
@@ -255,6 +256,8 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
           </DialogContent>
         </Dialog>
         }        
+
+        {user && user?.role != 'ALUMNI' && <WaitingRoom event={data} />}
 
         {/* Conveners /}
         <div className="mt-6">

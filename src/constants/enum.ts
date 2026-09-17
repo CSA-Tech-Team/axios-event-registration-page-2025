@@ -1,6 +1,7 @@
 export enum ERouterPaths {
   SIGNIN = "/signin",
   SIGNUP = "/signup",
+  AUTH_CALLBACK = "/auth/callback",
   HOME = "/",
   ACCOMODATION = "/profile/accomodation",
   TEAMS = "/profile/teams",
@@ -53,6 +54,14 @@ export enum ApiPaths {
   EVENT_UNREGISTER = "/un-register",
 
   REGISTERED_EVENT = "/me/event",
+
+  //WAITING ROOM (Enrolled) - a team event's pool of people with no team yet.
+  //Paths are built as `${MY_ENROLLED}/${eventId}/enrolled` and
+  //`${EVENT}/${eventId}/enrolled`, matching the API's /me/... convention.
+  MY_ENROLLED = "/me/event",
+  ENROLLED = "/enrolled",
+  ENROLLED_LISTING = "/enrolled/listing",
+  ENROLLED_INVITE = "/invite",
   //ACCOMODATION
   ACCOMODATION = "/me/accommodation",
   //LEADERBOARD
