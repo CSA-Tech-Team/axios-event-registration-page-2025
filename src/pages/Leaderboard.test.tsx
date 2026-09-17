@@ -87,6 +87,45 @@ describe("Leaderboard", () => {
     expect(podiumNames).toEqual(["College B", "College A", "College C"]);
   });
 
+  it("badges each podium place by its rank", async () => {
+    renderLeaderboard();
+    await screen.findByText("College A");
+
+    const badges = screen.getAllByRole("img", { name: /^Rank / });
+    expect(badges.map((badge) => badge.getAttribute("alt"))).toEqual([
+      "Rank 2",
+      "Rank 1",
+      "Rank 3",
+    ]);
+  });
+
+  // The API hands out equal ranks for equal scores, so the podium has to show
+  // both winners as first rather than demoting whichever arrived second.
+  it("puts tied entries on the same podium step", async () => {
+    getWithoutAuth.mockResolvedValue({
+      data: {
+        ...OVERVIEW,
+        colleges: [
+          entry({ rank: 1, id: "College A", name: "College A", totalScore: 350 }),
+          entry({ rank: 1, id: "College B", name: "College B", totalScore: 350 }),
+          entry({ rank: 3, id: "College C", name: "College C", totalScore: 120 }),
+        ],
+      },
+    });
+    renderLeaderboard();
+    await screen.findByText("College A");
+
+    const badges = screen.getAllByRole("img", { name: /^Rank / });
+    expect(badges.map((badge) => badge.getAttribute("alt"))).toEqual([
+      "Rank 1",
+      "Rank 1",
+      "Rank 3",
+    ]);
+
+    const [tiedB, tiedA] = badges.map((badge) => badge.closest("div"));
+    expect(tiedA?.className).toEqual(tiedB?.className);
+  });
+
   it("lists everyone past the top three below the podium", async () => {
     renderLeaderboard();
     await screen.findByText("College A");

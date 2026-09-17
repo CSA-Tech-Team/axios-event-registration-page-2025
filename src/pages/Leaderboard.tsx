@@ -35,12 +35,21 @@ const BOARDS: { key: BoardKey; label: string }[] = [
   { key: "users", label: "Individuals" },
 ];
 
+// The winner sits in the middle, so the three podium slots render 2nd, 1st, 3rd.
 const PODIUM_ORDER = [1, 0, 2];
-const PODIUM_STYLES = [
-  { height: "h-2/3", background: "bg-[#1F102D]", badge: lead2 },
-  { height: "h-full", background: "bg-[#311A49]", badge: lead1 },
-  { height: "h-1/3", background: "bg-[#1F102D]", badge: lead3 },
-];
+
+// Keyed by rank rather than by slot: tied entries share a rank, and so must
+// share a badge, height and colour instead of being dressed as 1-2-3 by the
+// order they happen to arrive in.
+const PODIUM_STYLES: Record<number, { height: string; background: string; badge: string }> = {
+  1: { height: "h-full", background: "bg-[#311A49]", badge: lead1 },
+  2: { height: "h-2/3", background: "bg-[#1F102D]", badge: lead2 },
+  3: { height: "h-1/3", background: "bg-[#1F102D]", badge: lead3 },
+};
+
+function podiumStyle(rank: number) {
+  return PODIUM_STYLES[rank] ?? PODIUM_STYLES[3];
+}
 
 function entryLabel(entry: LeaderboardEntry): string {
   return entry.name?.trim() || entry.id;
@@ -115,15 +124,21 @@ export const Leaderboard = () => {
 
             <div className="mx-auto mt-10 flex h-[40vh] max-w-2xl items-end gap-2">
               {podium.map((entry, slot) => {
-                const style = PODIUM_STYLES[slot];
                 if (!entry) return <div key={slot} className="w-1/3" />;
+                const style = podiumStyle(entry.rank);
 
                 return (
                   <div
                     key={entry.id}
-                    className={`${style.height} ${style.background} flex w-1/3 flex-col items-center justify-start rounded-2xl px-2 pb-4`}
+                    // min-h-fit keeps the short third-place bar from spilling its
+                    // name and score out below the card onto the page background.
+                    className={`${style.height} ${style.background} flex min-h-fit w-1/3 flex-col items-center justify-start rounded-2xl px-2 pb-4`}
                   >
-                    <img src={style.badge} alt="" className="-mt-12 h-24 w-24" />
+                    <img
+                      src={style.badge}
+                      alt={`Rank ${entry.rank}`}
+                      className="-mt-12 h-24 w-24"
+                    />
                     <div className="mt-3 w-full text-center">
                       <div className="truncate px-2 text-sm md:text-base">
                         {entryLabel(entry)}
