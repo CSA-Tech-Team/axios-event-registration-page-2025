@@ -1,9 +1,18 @@
+# Builds the production image and publishes it to GHCR. The server pulls from
+# there; nothing in this workflow reaches the server directly, because the box
+# sits on the campus network with no inbound route from GitHub.
 name: Build and Push Docker Image
 
 on:
   push:
     branches:
-      - main
+      - master
+  workflow_dispatch:
+
+env:
+  # The bundle is compiled with this baked in - see the Dockerfile. Changing the
+  # API host means re-running this workflow, not restarting the container.
+  VITE_DARPANET_HOST: https://darpanet.psgtech.ac.in/api
 
 jobs:
   build-and-push:
@@ -12,25 +21,32 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Check Out Repository
-        uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - name: Build Project
-        run: |
-          yarn install
-          yarn run build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Log in to GitHub Container Registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: |
-          REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          BRANCH_NAME=$(echo ${{ github.ref_name }} | tr '[:upper:]' '[:lower:]') # Get the branch name in lowercase
-          docker build . -t ghcr.io/$REPO_LOWER:$BRANCH_NAME
+      - name: Resolve image name
+        id: image
+        run: echo "name=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
-      - name: Push Docker image to GitHub Packages
-        run: |
-          REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')
-          BRANCH_NAME=$(echo ${{ github.ref_name }} | tr '[:upper:]' '[:lower:]') # Get the branch name in lowercase
-          docker push ghcr.io/$REPO_LOWER:$BRANCH_NAME
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            VITE_DARPANET_HOST=${{ env.VITE_DARPANET_HOST }}
+          tags: |
+            ${{ steps.image.outputs.name }}:master
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

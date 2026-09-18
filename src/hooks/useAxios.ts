@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ELocalStorageKeys } from "@/constants/enum";
+import { clearStoredToken, getStoredToken } from "@/lib/auth-client";
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 
 type RequestMethod =
@@ -16,14 +17,31 @@ export interface IHttpResponse<T> {
   data: T;
 }
 
+/**
+ * The Better Auth bearer token, which the API echoes in `set-auth-token`
+ * whenever it sets a session cookie. It is the primary credential now that
+ * Google is the only sign-in; the old zustand-persisted `authToken` is read as
+ * a fallback so a tab left open from before the migration still works until
+ * its session expires.
+ */
 function getAuthToken(): string | null {
-  const authStorage: string =
-    localStorage.getItem(ELocalStorageKeys.AUTH_STORE) ?? "";
-  const { state } = JSON.parse(authStorage);
-  return state?.authToken ?? null;
+  const betterAuthToken = getStoredToken();
+  if (betterAuthToken) return betterAuthToken;
+
+  try {
+    const authStorage = localStorage.getItem(ELocalStorageKeys.AUTH_STORE);
+    if (!authStorage) return null;
+    const { state } = JSON.parse(authStorage);
+    return state?.authToken ?? null;
+  } catch {
+    // Unparseable or absent storage is simply "not signed in". Before this
+    // guard, JSON.parse("") threw on every request for a signed-out visitor.
+    return null;
+  }
 }
 
 function clearTokens() {
+  clearStoredToken();
   localStorage.removeItem(ELocalStorageKeys.AUTH_STORE);
 }
 
@@ -32,6 +50,9 @@ export default function useAxios() {
 
   const axiosInstance = axios.create({
     baseURL,
+    // The API is on a different origin, so the Better Auth session cookie
+    // only travels when credentials are explicitly included.
+    withCredentials: true,
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
