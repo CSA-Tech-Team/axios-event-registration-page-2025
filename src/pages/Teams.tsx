@@ -19,6 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/ApiStates";
+import UnplacedEvents from "@/components/common/UnplacedEvents";
 
 const Teams = () => {
   const [showDiscard, setShowDiscard] = useState(false);
@@ -135,26 +136,32 @@ const Teams = () => {
               />
             </div>
           ) : (
-             <div className="grid z-0 h-5/6 lg:mt-0 lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 items-stretch overflow-auto scrollbar w-full gap-6 lg:p-12 p-6">
-              {getTeams() && getTeams().length > 0 ? (
-                getTeams().map((elt) => (
-                  <div
-                    onClick={() => {
-                      setShowTeamDetails(true);
-                      console.log(elt);
-                      setTeam(elt);
-                    }}
-                    className="h-full"
-                    key={elt?.id}
-                  >
-                    <TeamCard data={elt} />
+            <div className="z-0 h-5/6 lg:mt-0 overflow-auto scrollbar w-full">
+              {/* Inside the scroll container: the page is overflow-hidden, so
+                  anything after the grid would be clipped below the fold. */}
+              {user != null && user?.role != 'ALUMNI' && <UnplacedEvents />}
+
+              <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 items-stretch w-full gap-6 lg:p-12 p-6">
+                {getTeams() && getTeams().length > 0 ? (
+                  getTeams().map((elt) => (
+                    <div
+                      onClick={() => {
+                        setShowTeamDetails(true);
+                        console.log(elt);
+                        setTeam(elt);
+                      }}
+                      className="h-full"
+                      key={elt?.id}
+                    >
+                      <TeamCard data={elt} />
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-full flex justify-center items-center text-gray-400 text-lg font-medium">
+                    { user && user?.role!="ALUMNI" ? "No teams have been created.":" Alumni cannot create or join teams."}
                   </div>
-                ))
-              ) : (
-                <div className="col-span-full flex justify-center items-center text-gray-400 text-lg font-medium">
-                  { user && user?.role!="ALUMNI" ? "No teams have been created.":" Alumni cannot create or join teams."}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>

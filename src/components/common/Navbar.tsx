@@ -25,7 +25,8 @@ import team from "@/assets/teams.svg";
 import accomodation from "@/assets/accomodation.svg";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useAuthStore } from "@/store/ApiStates";
-import { isAuthenticated } from "@/utils/common";
+import { useIsSignedIn } from "@/hooks/useIsSignedIn";
+import { signOut } from "@/lib/auth-client";
 import {
   Tooltip,
   TooltipContent,
@@ -175,10 +176,21 @@ const NavBar: React.FC = () => {
   };
 
   const { clearTokens } = useAuthStore();
-  const handleLogout = () => {
-    clearTokens();
-    localStorage.clear();
-    navigate(ERouterPaths.SIGNIN);
+  const signedIn = useIsSignedIn();
+
+  /**
+   * Ends the session on the API first. Clearing local storage alone left the
+   * httpOnly session cookie alive, so the very next request signed the person
+   * straight back in and "Logout" did nothing.
+   */
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } finally {
+      clearTokens();
+      localStorage.clear();
+      navigate(ERouterPaths.SIGNIN);
+    }
   };
 
   return (
@@ -283,20 +295,20 @@ const NavBar: React.FC = () => {
                   ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
                   : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
               onClick={() => {
-                if (isAuthenticated()) {
+                if (signedIn) {
                   setOpen(true); // open confirm dialog
                 } else {
                   navigate(ERouterPaths.SIGNIN);
                 }
               }}
             >
-              {isAuthenticated() ? (
+              {signedIn ? (
                 <LogOut style={{ width: "20px", height: "20px" }} />
               ) : (
                 <SquareArrowOutUpRightIcon style={{ width: "20px", height: "20px" }} />
               )}
               <span className="hidden sm:hidden md:block text-sm font-medium">
-                {isAuthenticated() ? "Logout" : "Signin"}
+                {signedIn ? "Logout" : "Signin"}
               </span>
             </div>
 

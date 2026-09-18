@@ -24,7 +24,6 @@ import useAxios from "@/hooks/useAxios";
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import WaitingRoom from "@/components/common/WaitingRoom";
 
 interface EventDescriptionProps {
   data: any;
@@ -257,7 +256,52 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
         </Dialog>
         }        
 
-        {user && user?.role != 'ALUMNI' && <WaitingRoom event={data} />}
+        {(() => {
+          // Only on team events, and only for somebody who could still take
+          // part: alumni cannot join teams, and anybody already registered
+          // needs nothing from this.
+          if (!user || user?.role == 'ALUMNI') return null;
+          if (!(data?.teamMaxSize > 1)) return null;
+
+          const alreadyIn = getRegisteredEvents()?.find(
+            (elt: any) => elt?.event?.id === data?.id && elt?.team
+          );
+          if (alreadyIn) return null;
+
+          // Does any team they are in actually fit this event? A team that is
+          // too small - most often a team of one, or none at all - is the
+          // "yet to form a team" case: they have opted for the event but
+          // cannot register until the team meets its minimum.
+          const teams = (getTeams() || []) as any[];
+          const usable = teams.find(
+            (team: any) =>
+              (team?.members?.length ?? 0) >= data?.teamMinSize &&
+              (team?.members?.length ?? 0) <= data?.teamMaxSize
+          );
+          if (usable) return null;
+
+          const biggest = teams.reduce(
+            (max: number, team: any) =>
+              Math.max(max, team?.members?.length ?? 0),
+            0
+          );
+
+          return (
+            <div className="mt-4">
+              <p className="mb-2 text-sm text-gray-300">
+                {biggest === 0
+                  ? `This event needs a team of ${data?.teamMinSize} to ${data?.teamMaxSize}. You are not in a team yet.`
+                  : `This event needs at least ${data?.teamMinSize} members. Your team has ${biggest}.`}
+              </p>
+              <Button
+                className="w-full lg:w-1/2 bg-[#512F5C] hover:bg-[#4b2570] text-white px-8 py-2.5 rounded-sm font-medium shadow-lg"
+                onClick={() => navigate(ERouterPaths.TEAMS)}
+              >
+                Join or create a team to participate
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Conveners /}
         <div className="mt-6">
@@ -376,6 +420,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     getIsProfileCompleted,
     getRegisteredEvents,
     setRegisteredEvents,
+    getTeams,
   } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -623,6 +668,48 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Somebody who opted for this event but has no usable team yet - the
+            "enrolled" case the migration imports. They cannot register until a
+            team meets the event's minimum, so send them where teams are made
+            rather than leaving them with a disabled button and no explanation. */}
+        {(() => {
+          if (!user || user?.role === 'ALUMNI') return null;
+          if (!(data?.teamMaxSize > 1)) return null;
+          if (isRegistered) return null;
+
+          const teams = (getTeams() || []) as any[];
+          const min = data?.teamMinSize ?? 1;
+          const max = data?.teamMaxSize ?? 1;
+
+          const usable = teams.find((team: any) => {
+            const size = team?.members?.length ?? 0;
+            return size >= min && size <= max;
+          });
+          if (usable) return null;
+
+          const biggest = teams.reduce(
+            (largest: number, team: any) =>
+              Math.max(largest, team?.members?.length ?? 0),
+            0,
+          );
+
+          return (
+            <div className="mt-4">
+              <p className="mb-2 text-sm text-gray-300">
+                {biggest === 0
+                  ? `This event is played in teams of ${min} to ${max}. You are not in a team yet.`
+                  : `This event needs at least ${min} members. Your largest team has ${biggest}.`}
+              </p>
+              <Button
+                className="w-full lg:w-1/2 bg-[#512F5C] hover:bg-[#4b2570] text-white px-8 py-2.5 rounded-sm font-medium shadow-lg"
+                onClick={() => navigate(ERouterPaths.TEAMS)}
+              >
+                Join or create a team to participate
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Conveners */}
         <div className="mt-6">
