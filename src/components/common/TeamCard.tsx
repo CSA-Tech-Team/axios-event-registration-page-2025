@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import profileIcon from "@/assets/violetProfile.svg";
 import { FC, useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, UserRound } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,8 +35,8 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
       toast({
         title: "Success",
         description: (
-          <pre className="mt-2 w-[340px] rounded-lg bg-white p-4">
-            <code className="text-black">
+          <pre className="mt-2 max-w-[340px] whitespace-pre-wrap border-2 border-ink bg-wcard p-3 font-mono text-xs">
+            <code className="text-ink">
               Team {data?.name} deleted successfully
             </code>
           </pre>
@@ -52,82 +52,89 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
   });
 
   return (
-    <div className="bg-gradient-to-br from-[#1f1f1f] to-[#2a2a2a] rounded-2xl p-6 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between relative">
+    <article className="relative flex h-full rotate-[0.5deg] flex-col border-2 border-ink bg-card p-5 text-ink shadow-brut-md transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:rotate-0">
       {/* Delete button - top right */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <button
+            type="button"
+            aria-label={`Delete team ${data?.name ?? ""}`}
             onClick={(e) => e.stopPropagation()} // 👈 Prevent triggering parent click
-            className="absolute top-3 right-3 p-2 rounded-full hover:bg-red-500/20 text-red-500 transition"
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center border-2 border-ink bg-wcard text-ink shadow-brut-sm transition-[transform,background-color,color] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-destructive hover:text-white"
           >
-            <Trash2 size={18} />
+            <Trash2 size={18} aria-hidden="true" />
           </button>
         </DialogTrigger>
-        <DialogContent className="bg-[#121212] text-white" onClick={(e) => e.stopPropagation()}>
+        <DialogContent onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>
               Are you sure you want to delete team "{data?.name}"?
             </DialogTitle>
           </DialogHeader>
-          <div className="flex gap-4 mt-4 justify-end">
-            <Button variant="outline" className="text-black" onClick={() => setOpen(false)}>
+          <DialogFooter className="mt-2">
+            <Button variant="secondary" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button
-              className="bg-red-600 hover:bg-red-700"
+              variant="destructive"
               onClick={() => deleteTeamMutation.mutateAsync()}
             >
               Delete
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-2xl font-extrabold text-[#80466E] tracking-wide">
+      <div className="mb-4 flex flex-col gap-3 pr-12">
+        <h2 className="break-words font-display text-[clamp(28px,3.4vw,36px)] uppercase leading-[0.9]">
           {data?.name}
-        </div>
+        </h2>
+        {/* A team of one made for a migrated member who signed up for a team
+            event without a team. They fill it by inviting people, or leave it
+            and join another team. It becomes an ordinary team once it
+            registers for the event. */}
+        {data?.teamType === "ENROLLED" && (
+          <div className="self-start -rotate-[1deg] border-2 border-ink bg-acc-2 px-2 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] text-ink shadow-brut-sm">
+            Waiting for members · open this team to invite people
+          </div>
+        )}
       </div>
 
       {/* Profile + Details */}
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-14 h-14 rounded-full overflow-hidden shadow">
-          <img
-            src={profileIcon}
-            alt="Profile Icon"
-            className="w-full h-full object-cover"
-          />
+      <div className="mb-4 flex items-center gap-4">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-wcard">
+          <UserRound className="h-7 w-7" aria-hidden="true" />
         </div>
-        <div className="flex flex-col gap-2 text-sm text-gray-300">
-          <div className="grid grid-cols-2 gap-2">
-            <span className="font-medium text-gray-400">Team ID:</span>
-            <span className="font-semibold text-white">{data?.id}</span>
+        <dl className="flex min-w-0 flex-col gap-2 text-sm">
+          <div className="grid grid-cols-[auto_1fr] items-baseline gap-2">
+            <dt className="eyebrow text-ink-2">Team ID</dt>
+            <dd className="truncate font-mono text-xs font-bold">{data?.id}</dd>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <span className="font-medium text-gray-400">Owner:</span>
-            <span className="font-semibold text-[#80466E]">
+          <div className="grid grid-cols-[auto_1fr] items-baseline gap-2">
+            <dt className="eyebrow text-ink-2">Owner</dt>
+            <dd className="truncate font-bold">
               {data?.members[0]?.profile?.firstName}
-            </span>
+            </dd>
           </div>
-        </div>
+        </dl>
       </div>
 
       {/* Members */}
-      <div>
-        <span className="font-medium text-gray-400 block mb-2">Members:</span>
+      <div className="mt-auto border-t-2 border-dashed border-line pt-4">
+        <span className="eyebrow mb-2 block text-ink-2">Members</span>
         <div className="flex flex-wrap gap-2">
           {data?.members?.slice(1).map((elt: any, idx: number) => (
             <div
               key={idx}
-              className="px-2 py-1 rounded-md bg-[#80466E] text-white text-sm font-medium border border-violet-500/30"
+              className="border-2 border-ink bg-wcard px-2 py-1 text-sm font-semibold"
             >
               {elt?.profile?.firstName}
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

@@ -18,35 +18,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
 
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useAuthStore } from "@/store/ApiStates";
 import useAxios from "@/hooks/useAxios";
-import useWindowDimensions from "@/hooks/useWindowDimension";
 
 function AlumniAccommodation() {
-  const windowSize = useWindowDimensions();
   const navigate = useNavigate();
-  const { getAccommodation } = useAuthStore();
 
   const reset = () => {
     navigate(ERouterPaths.PROFILE);
   };
 
-  return (
-    <div className="flex w-full flex-wrap justify-between h-full overflow-auto">
-      <div className="w-full">
-        <div className="w-full text-white pt-12 items-center align-middle">
-        
-
-          <div className="flex flex-col items-center w-full gap-4 lg:p-0 p-6 max-[500px]:px-2">
-            <AlumniAccommodationCard reset={reset} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <AlumniAccommodationCard reset={reset} />;
 }
 
 export default AlumniAccommodation;
@@ -115,66 +99,73 @@ const AlumniAccommodationCard: FC<AlumniAccommodationCardProps> = ({ reset }) =>
   };
 
   // --- Loading/Error states ---
-  if (isPending) return <div>Loading...</div>;
+  if (isPending)
+    return (
+      <p className="py-10 font-mono text-sm uppercase tracking-[0.08em] text-ink">
+        <span aria-hidden="true" className="mr-2 inline-block h-3 w-2 animate-brut-blink bg-ink align-middle" />
+        Loading...
+      </p>
+    );
   if (isError)
     return (
-      <div className="text-red-400">
+      <p
+        role="alert"
+        className="border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-4 py-3 font-semibold text-ink"
+      >
         Could not load accommodation. Please try again later.
-      </div>
+      </p>
     );
 
   // --- CASE 1: Already has a request ---
   if (data && data.id) {
+    const status = getAccommodation()?.status;
     return (
-      <div className="p-6 bg-[#1E1E1E] w-full lg:w-2/3 rounded-xl text-white space-y-6 shadow-md border border-violet-700/30">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <p>
-            <span className="font-light">Accommodation Request ID:</span>{" "}
-            <span className="font-semibold text-[#80466E]">
+      <section className="brut-card w-full max-w-3xl space-y-6 p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="eyebrow text-ink-2">Request ID</p>
+            <p className="mt-1 break-all font-mono text-sm font-bold text-ink">
               {getAccommodation()?.id}
-            </span>
-          </p>
-          <div
-            className={`px-4 py-2 rounded-full text-sm font-medium ${
-              getAccommodation()?.status === "APPROVED"
-                ? "bg-green-500/20 text-green-400"
-                : getAccommodation()?.status === "PENDING"
-                ? "bg-yellow-500/20 text-yellow-400"
-                : "bg-red-500/20 text-red-400"
+            </p>
+          </div>
+          <span
+            className={`self-start rotate-[1deg] border-2 border-ink px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.1em] shadow-brut-sm md:self-auto ${
+              status === "APPROVED"
+                ? "bg-r4 text-ink"
+                : status === "PENDING"
+                ? "bg-acc-2 text-ink"
+                : "bg-destructive text-white"
             }`}
           >
-            {getAccommodation()?.status}
-          </div>
+            {status}
+          </span>
         </div>
 
         <div>
-          <p className="font-medium mb-2">Your Notes</p>
-          <div className="bg-black/50 p-4 rounded-lg border border-gray-700">
+          <p className="eyebrow mb-2 text-ink-2">Your notes</p>
+          <div className="border-2 border-ink bg-wcard p-4 font-mono text-sm text-ink">
             {getAccommodation()?.notes}
           </div>
         </div>
-        <CoordinatorInfo />
-      </div>
+        <div className="border-t-2 border-dashed border-line pt-5">
+          <CoordinatorInfo />
+        </div>
+      </section>
     );
   }
 
   // --- CASE 2: New request (Ask directly) ---
   return (
-    <div className="flex flex-col items-center justify-center p-6 text-white space-y-6 border shadow-xl border-violet-700/30 rounded-xl bg-[#1E1E1E] w-full lg:w-2/3">
+    <section className="brut-card w-full max-w-2xl space-y-6 p-6">
       {needsAccommodation === null && (
         <>
-          <p className="text-gray-300 text-center max-w-xl">
+          <p className="font-section text-2xl font-extrabold uppercase leading-[0.95] text-ink">
             Do you require accommodation during the event?
           </p>
-          <div className="flex gap-6">
+          <div className="flex gap-4">
+            <Button onClick={() => setNeedsAccommodation(true)}>Yes</Button>
             <Button
-              className="bg-[#80466E] hover:bg-[#5e3350]"
-              onClick={() => setNeedsAccommodation(true)}
-            >
-              Yes
-            </Button>
-            <Button
-              className="bg-gray-600 hover:bg-gray-700"
+              variant="secondary"
               onClick={() => {
                 reset();
               }}
@@ -186,24 +177,26 @@ const AlumniAccommodationCard: FC<AlumniAccommodationCardProps> = ({ reset }) =>
       )}
 
       {needsAccommodation === true && (
-        <div className="flex flex-col gap-4 items-center w-full">
-          <p className="text-gray-300 text-left">Add any notes for your accommodation request:</p>
-            <textarea
-            className="bg-[#1E1E1E] border border-gray-600 rounded-lg w-full max-w-md p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#80466E]"
+        <div className="flex w-full flex-col gap-4">
+          <label htmlFor="alumni-accommodation-note" className="eyebrow text-ink">
+            Add any notes for your accommodation request
+          </label>
+          <textarea
+            id="alumni-accommodation-note"
+            className="w-full border-2 border-ink bg-wcard p-3 text-base text-ink placeholder:text-ink-2 focus-visible:shadow-brut-sm focus-visible:outline-none"
             placeholder="Enter any special requirements or notes..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
-            />
-          <Button
-            className="bg-[#80466E] hover:bg-[#5e3350] mt-4"
-            onClick={handleSubmit}
-          >
-            Confirm & Submit
-          </Button>
+          />
+          <div>
+            <Button onClick={handleSubmit}>Confirm & Submit</Button>
+          </div>
         </div>
       )}
-      <CoordinatorInfo />
-    </div>
+      <div className="border-t-2 border-dashed border-line pt-5">
+        <CoordinatorInfo />
+      </div>
+    </section>
   );
 };

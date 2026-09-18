@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import emblem from "@/assets/axiosemblem.png";
+import BrandMark from "@/components/common/BrandMark";
 import GoogleIcon from "@/components/common/GoogleIcon";
 import { ERouterPaths } from "@/constants/enum";
 import { signInWithGoogle, useSession } from "@/lib/auth-client";
@@ -73,39 +73,60 @@ const SignIn = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen w-full bg-[#171717] text-white px-6">
-      <div className="flex flex-col items-center mb-10">
-        <img src={emblem} alt="Logo" className="h-40 w-40 mb-2" />
-        <h1 className="text-3xl font-bold text-[#EFAD8B]">Welcome to Axios</h1>
-        <p className="text-sm text-gray-400">
-          Use your Google account to continue
-        </p>
-      </div>
-
-      {error && (
-        <div
-          role="alert"
-          className="w-full max-w-sm mb-6 rounded-md border border-[#C02727]/60 bg-[#C02727]/20 px-4 py-3 text-center text-sm"
-        >
-          {error}
+    <main className="flex min-h-dvh w-full items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="relative mb-12 text-center">
+          <BrandMark variant="hero" />
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-7 right-2 rotate-[-6deg] font-note text-xl text-acc sm:right-6"
+          >
+            claim your seat
+          </span>
         </div>
-      )}
 
-      <button
-        type="button"
-        onClick={handleGoogleSignIn}
-        disabled={isRedirecting || isPending}
-        className="w-full max-w-sm flex items-center justify-center gap-3 rounded-md bg-white px-4 py-4 font-semibold text-[#171717] transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <GoogleIcon className="h-5 w-5" />
-        {isRedirecting ? "Redirecting to Google…" : "Continue with Google"}
-      </button>
+        <section
+          aria-labelledby="signin-title"
+          className="brut-card rotate-[0.6deg] p-6 sm:p-8"
+        >
+          <p className="eyebrow text-ink-2">Sign in · Registration desk</p>
+          <h1
+            id="signin-title"
+            className="mt-2 font-section text-4xl font-extrabold uppercase leading-[0.9] tracking-[-0.03em]"
+          >
+            Welcome to Axios
+          </h1>
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-2">
+            Use your Google account to continue.
+          </p>
 
-      <p className="mt-6 max-w-sm text-center text-xs text-gray-500">
-        New here? Signing in with Google creates your Axios account
-        automatically. You will be asked to complete your profile afterwards.
-      </p>
-    </div>
+          {error && (
+            <div
+              role="alert"
+              className="mt-5 border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-4 py-3 text-sm font-semibold text-ink"
+            >
+              {error}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={isRedirecting || isPending}
+            className="mt-6 flex min-h-12 w-full items-center justify-center gap-3 border-[3px] border-ink bg-wcard px-4 py-3 font-bold text-ink shadow-brut transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:-translate-x-0.5 focus-visible:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-brut-press disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <GoogleIcon className="h-5 w-5" />
+            {isRedirecting ? "Redirecting to Google…" : "Continue with Google"}
+          </button>
+
+          <p className="mt-6 border-t-2 border-dashed border-line pt-4 text-sm leading-relaxed text-ink-2">
+            New here? Signing in with Google creates your Axios account
+            automatically. You will be asked to complete your profile
+            afterwards.
+          </p>
+        </section>
+      </div>
+    </main>
   );
 };
 

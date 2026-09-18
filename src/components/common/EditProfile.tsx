@@ -52,6 +52,16 @@ import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import FloatingWhatsAppButton from "./FloatingWhatsAppButton";
 
+// One bordered field holding an icon and a borderless control, so the pair
+// reads as a single input (brutalist standard §10 — square, ink, hard focus).
+const FIELD =
+  "flex min-h-11 items-center gap-3 border-2 border-ink bg-wcard px-3 transition-shadow focus-within:shadow-brut-sm has-[:disabled]:bg-paper";
+const FIELD_ICON = "h-5 w-5 shrink-0 text-ink-2";
+const FIELD_INPUT =
+  "min-h-0 w-full border-0 bg-transparent px-0 py-2 focus-visible:shadow-none disabled:bg-transparent disabled:opacity-100";
+const FIELD_TRIGGER =
+  "min-h-0 border-0 bg-transparent px-0 py-2 focus-visible:shadow-none data-[state=open]:shadow-none";
+
 const EditProfile = () => {
   const { getUser } = useAuthStore();
   const user: any = getUser();
@@ -588,19 +598,27 @@ const updateUserMutation = useMutation({
 
   if (isSuccess) {
     return (
-    <div className="flex w-full h-full justify-center items-start overflow-auto bg-gradient-to-br from-[#0f0f0f] to-[#1a1a1a] p-6 scrollbar-hide">
+    <div className="brut-container pb-20 pt-10 md:pt-14">
       {/* <FloatingWhatsAppButton inviteLink="https://chat.whatsapp.com/K6ZurxzU7siAY1ZRxeiL4K" /> */}
-      <div className="w-full lg:w-4/5 xl:w-3/5 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl p-8">
+      <header className="border-b-2 border-ink pb-6">
+        <p className="eyebrow text-ink-2">Axios · Registration desk</p>
+        <h1 className="display-title registration mt-2">Profile</h1>
+      </header>
+
+      <div className="brut-card mt-10 w-full max-w-4xl p-5 sm:p-8">
         {/* ID Header */}
-        <h2 className="text-2xl md:text-3xl font-semibold text-center text-white mb-10">
-          Your ID: <span className="text-[#80466E]">{user?.id}</span>
+        <h2 className="mb-8 flex flex-wrap items-center gap-3 border-b-2 border-dashed border-line pb-5 text-base font-bold">
+          Your ID:{" "}
+          <span className="border-2 border-ink bg-wcard px-2 py-1 font-mono text-sm shadow-brut-sm">
+            {user?.id}
+          </span>
         </h2>
 
         {/* Form */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2"
           >
             {/* Phone Number */}
             <FormField
@@ -608,17 +626,17 @@ const updateUserMutation = useMutation({
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Phone Number</Label>
+                  <Label>Phone Number</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500">
-                      <PhoneIcon className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <PhoneIcon className={FIELD_ICON} aria-hidden="true" />
                       <Input
                         {...field}
                         type="text" 
                         placeholder="Enter your phone number"
                         required
                         disabled={isProfileCompleted}
-                        className="bg-transparent border-none focus:ring-0 text-white placeholder-gray-400 w-full"
+                        className={FIELD_INPUT}
                       />
                     </div>
                   </FormControl>
@@ -633,16 +651,16 @@ const updateUserMutation = useMutation({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Email</Label>
+                  <Label>Email</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3 shadow-sm">
-                      <Mails className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <Mails className={FIELD_ICON} aria-hidden="true" />
                       <Input
                         {...field}
                         type="text"
                         disabled
                         placeholder="Enter your email"
-                        className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                        className={FIELD_INPUT}
                       />
                     </div>
                   </FormControl>
@@ -657,17 +675,17 @@ const updateUserMutation = useMutation({
               name="firstName"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">First Name</Label>
+                  <Label>First Name</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3 shadow-sm">
-                      <Badge className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <Badge className={FIELD_ICON} aria-hidden="true" />
                       <Input
                         {...field}
                         type="text"
                         placeholder="Enter your first name"
                         required
                         disabled={isProfileCompleted}
-                        className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                        className={FIELD_INPUT}
                       />
                     </div>
                   </FormControl>
@@ -682,17 +700,17 @@ const updateUserMutation = useMutation({
               name="lastName"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Last Name</Label>
+                  <Label>Last Name</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3 shadow-sm">
-                      <Badge className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <Badge className={FIELD_ICON} aria-hidden="true" />
                       <Input
                         {...field}
                         type="text"
                         placeholder="Enter your last name"
                         required
                         disabled={isProfileCompleted}
-                        className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                        className={FIELD_INPUT}
                       />
                     </div>
                   </FormControl>
@@ -707,16 +725,16 @@ const updateUserMutation = useMutation({
               name="gender"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Gender</Label>
+                  <Label>Gender</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      <User className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <User className={FIELD_ICON} aria-hidden="true" />
                       {!isProfileCompleted ? (
                         <Select
                           onValueChange={(e) => setGender(e as any)}
                           value={gender}
                         >
-                          <SelectTrigger className="bg-transparent border-none text-white w-full">
+                          <SelectTrigger className={FIELD_TRIGGER}>
                             <SelectValue placeholder="Select Gender" />
                           </SelectTrigger>
                           <SelectContent>
@@ -729,7 +747,7 @@ const updateUserMutation = useMutation({
                           {...field}
                           type="text"
                           disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          className={FIELD_INPUT}
                         />
                       )}
                     </div>
@@ -747,22 +765,25 @@ const updateUserMutation = useMutation({
                 name="referralCode"
                 render={({ field }) => (
                   <FormItem>
-                    <Label className="text-gray-300">Referral Code</Label>
+                    <Label>Referral Code</Label>
                     <FormControl>
-                      <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3 shadow-sm">
-                        <UserPlus className="text-gray-400 mr-3" />
+                      <div className={FIELD}>
+                        <UserPlus className={FIELD_ICON} aria-hidden="true" />
                         <Input
                           {...field}
                           type="text"
                           disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          className={FIELD_INPUT}
                         />
-                        <div
-                          className="px-4 cursor-pointer"
+                        <button
+                          type="button"
+                          aria-label="Copy referral code"
+                          title="Copy referral code"
+                          className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-ink bg-card shadow-brut-sm transition-transform duration-150 hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
                           onClick={() => copyReferral()}
                         >
-                          <Copy className="text-gray-400" />
-                        </div>
+                          <Copy className="h-4 w-4" aria-hidden="true" />
+                        </button>
                       </div>
                     </FormControl>
                     <FormMessage />
@@ -778,17 +799,17 @@ const updateUserMutation = useMutation({
               name="collegeName"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">College</Label>
+                  <Label>College</Label>
                   <FormControl>
-                    <div className="flex flex-col items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      {/*<Building className="text-gray-400 mr-3" />*/}
+                    <div className="flex flex-col gap-2">
+                      {/*<Building className={FIELD_ICON} aria-hidden="true" />*/}
                       {!isProfileCompleted ? (
                         <>
                           <Select
                             onValueChange={(e) => {setSelectedCollege(e as any); setSelectedCourse("");}}
                             value={selectedCollege}
                           >
-                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                            <SelectTrigger>
                               <SelectValue placeholder="Select College" />
                             </SelectTrigger>
                             <SelectContent>
@@ -806,7 +827,7 @@ const updateUserMutation = useMutation({
                               autoFocus={true}
                               onChange={(e) => { setOtherCollege(e.target.value); setSelectedCourse(""); }} 
                               placeholder="Enter your college"
-                              className="flex mt-2 bg-[#1f1f1f] text-white"
+                              
                             />
                           )}
                         </>
@@ -815,7 +836,7 @@ const updateUserMutation = useMutation({
                           {...field}
                           type="text"
                           disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          className="disabled:opacity-100"
                         />
                       )}
                     </div>
@@ -879,7 +900,7 @@ const updateUserMutation = useMutation({
                       {...field}
                       type="text"
                       disabled
-                      className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                      className={FIELD_INPUT}
                     />
                   )}
                 </div>
@@ -894,10 +915,10 @@ const updateUserMutation = useMutation({
               name="degreeOfStudy"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Course</Label>
+                  <Label>Course</Label>
                   <FormControl>
-                    <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                      <Book className="text-gray-400 mr-3" />
+                    <div className={FIELD}>
+                      <Book className={FIELD_ICON} aria-hidden="true" />
                       {!isProfileCompleted ? (
                         <>
                         {selectedCollege === "Others" ? (
@@ -912,7 +933,7 @@ const updateUserMutation = useMutation({
                             onValueChange={(e) => {setSelectedCourse(e as any); setSelectedYear("");}}
                             value={selectedCourse}
                           >
-                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                            <SelectTrigger className={FIELD_TRIGGER}>
                             <SelectValue placeholder="Select Course" />
                           </SelectTrigger>
                           <SelectContent>
@@ -930,7 +951,7 @@ const updateUserMutation = useMutation({
                           type="text"
                           
                           disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          className={FIELD_INPUT}
                         />
                       )}
                     </div>
@@ -947,9 +968,9 @@ const updateUserMutation = useMutation({
               name="degreeOfStudy"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="text-gray-300">Course</Label>
+                  <Label>Course</Label>
                   <FormControl>
-                    <div className="flex flex-col bg-[#1f1f1f] rounded-xl px-4 py-3">
+                    <div className="flex flex-col gap-2">
                       {!isProfileCompleted ? (
                         <>
                           {/* Case 1: If College is 'Others' → custom course input */}
@@ -958,7 +979,7 @@ const updateUserMutation = useMutation({
                               value={otherCourse}
                               onChange={(e) => setOtherCourse(e.target.value)}
                               placeholder="Enter your course name"
-                              className="bg-[#1f1f1f] text-white"
+                              
                             />
                           ) : (
                             <>
@@ -970,7 +991,7 @@ const updateUserMutation = useMutation({
                                 }}
                                 value={selectedCourse}
                               >
-                                <SelectTrigger className="bg-transparent border-none text-white w-full">
+                                <SelectTrigger>
                                   <SelectValue placeholder="Select Course" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -989,7 +1010,7 @@ const updateUserMutation = useMutation({
                                   value={otherCourse}
                                   onChange={(e) => setOtherCourse(e.target.value)}
                                   placeholder="Enter your course name"
-                                  className="mt-2 bg-[#1f1f1f] text-white"
+                                  
                                 />
                               )}
                             </>
@@ -1000,7 +1021,7 @@ const updateUserMutation = useMutation({
                           {...field}
                           type="text"
                           disabled
-                          className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                          className="disabled:opacity-100"
                         />
                       )}
                     </div>
@@ -1046,16 +1067,16 @@ const updateUserMutation = useMutation({
 
                 return (
                   <FormItem>
-                    <Label className="text-gray-300">Year of Study</Label>
+                    <Label>Year of Study</Label>
                     <FormControl>
-                      <div className="flex items-center bg-[#1f1f1f] rounded-xl px-4 py-3">
-                        <Timer className="text-gray-400 mr-3" />
+                      <div className={FIELD}>
+                        <Timer className={FIELD_ICON} aria-hidden="true" />
                         {!isProfileCompleted ? (
                           <Select
                             onValueChange={(e) => { setSelectedYear(e as any) }}
                             value={selectedYear}
                           >
-                            <SelectTrigger className="bg-transparent border-none text-white w-full">
+                            <SelectTrigger className={FIELD_TRIGGER}>
                               <SelectValue placeholder="Select Year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -1071,7 +1092,7 @@ const updateUserMutation = useMutation({
                             {...field}
                             type="text"
                             disabled
-                            className="bg-transparent border-none text-white placeholder-gray-400 w-full"
+                            className={FIELD_INPUT}
                           />
                         )}
                       </div>
@@ -1087,14 +1108,11 @@ const updateUserMutation = useMutation({
 
             {/* Submit Button */}
             {!isProfileCompleted && (
-              <div className="col-span-1 md:col-span-2 flex justify-center mt-8">
-                <Button
-                  type="submit"
-                  className="bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-md font-medium shadow-lg transition-all duration-700 ease-in-out"
-                >
+              <div className="mt-3 flex justify-end border-t-2 border-dashed border-line pt-6 md:col-span-2">
+                <Button type="submit">
                   <Dialog open={open} onOpenChange={setOpen}>
                             Complete Profile
-                            <DialogContent className="bg-[#121212] shadow-lg text-white"
+                            <DialogContent
                               onInteractOutside={(e) => e.preventDefault()} // ⛔ prevent outside click
                               onEscapeKeyDown={(e) => e.preventDefault()}
                             >
@@ -1106,21 +1124,21 @@ const updateUserMutation = useMutation({
                                 </DialogDescription>
                                 <DialogDescription>
                                   {!showResend && (
-                                    <span className="text-md text-[#B2B2B2]">
+                                    <span className="font-mono text-xs uppercase tracking-[0.06em] text-ink-2">
                                       Request OTP again in {time} seconds
                                     </span>
                                   )}
                                   {showResend && (
                                     <button
                                       type="submit"
-                                      className="text-md text-white justify-center w-full  flex"
+                                      className="font-bold text-ink underline decoration-acc decoration-2 underline-offset-4"
                                       onClick={sendOTP}
                                     >
                                       Request OTP again
                                     </button>
                                   )}
                                 </DialogDescription>
-                                <div className="flex lg:flex-row flex-col p-3 t items-center">
+                                <div className="flex flex-col items-start gap-4 pt-3 sm:flex-row sm:items-center">
                                   <InputOTP
                                     maxLength={6}
                                     className="w-3/4 flex  justify-between"
@@ -1146,9 +1164,8 @@ const updateUserMutation = useMutation({
                                       <InputOTPSlot index={5} />
                                     </InputOTPGroup>
                                   </InputOTP>
-                                  <div className="p-3">
+                                  <div>
                                     <Button
-                                      className="bg-Violet"
                                       onClick={() => {
                                         verifyOTP.mutateAsync();
                                       }}

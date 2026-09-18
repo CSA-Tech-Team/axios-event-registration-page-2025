@@ -26,33 +26,41 @@ const Invitation = () => {
   });
 
   return (
-    <div className="w-full ">
-      <div className="w-full lg:block">
-        <div className="w-full text-white pt-12">
-          <div className="lg:p-12 p-6 text-3xl flex items-center gap-4">
-            {windowSize.width < 1024 ? (
-              <div className="text-white " onClick={() => reset()}>
-                <ArrowLeft />
-                {/* <img src={back} alt="" className="w-4" /> */}
-              </div>
-            ) : (
-              ""
-            )}
-            Invitations
-          </div>
-          {invites.length != 0 ? (
-            <div className="flex flex-col items-center  w-full gap-4 lg:px-12 p-6">
-              {invites.map((elt: any) => (
-                <InvitationCard data={elt} />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col p-3 align-middle items-center w-full justify-between rounded-3xl font-medium text-gray-400 md:px-12 px-6">
-              You have no invitations.
-            </div>
-          )}
+    <div className="brut-container pb-20 pt-10 md:pt-14">
+      <header className="flex items-end gap-4 border-b-2 border-ink pb-6">
+        {windowSize.width < 1024 ? (
+          <button
+            type="button"
+            aria-label="Back to profile"
+            onClick={() => reset()}
+            className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-ink bg-wcard text-ink shadow-brut-sm"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+        ) : (
+          ""
+        )}
+        <div>
+          <p className="eyebrow text-ink-2">Profile · Team requests</p>
+          <h1 className="display-title registration mt-2">Invitations</h1>
         </div>
-      </div>
+      </header>
+      {invites.length != 0 ? (
+        <ul className="mt-10 flex w-full flex-col gap-6">
+          {invites.map((elt: any, idx: number) => (
+            <li key={elt?.id ?? idx}>
+              <InvitationCard data={elt} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="mx-auto mt-12 max-w-xl -rotate-[0.5deg] border-2 border-dashed border-ink bg-card px-6 py-8 text-center">
+          <p className="font-note text-2xl text-ink">Inbox empty</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink-2">
+            You have no invitations.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

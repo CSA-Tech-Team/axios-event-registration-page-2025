@@ -1,5 +1,6 @@
 // WhatsAppLink.tsx
 import React, { useCallback, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   phone: string;                // international form: e.g. "+919876543210" or "919876543210"
@@ -88,7 +89,10 @@ export default function WhatsAppLink({
     <a
       href={webUrl}                 // fallback and progressive enhancement
       onClick={handleClick}
-      className={className}
+      className={cn(
+        "font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4 hover:decoration-ink",
+        className,
+      )}
       aria-label={ariaLabel}
       rel="noopener noreferrer"
     >

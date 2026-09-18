@@ -92,7 +92,7 @@ describe("Leaderboard", () => {
     await screen.findByText("College A");
 
     const badges = screen.getAllByRole("img", { name: /^Rank / });
-    expect(badges.map((badge) => badge.getAttribute("alt"))).toEqual([
+    expect(badges.map((badge) => badge.getAttribute("aria-label"))).toEqual([
       "Rank 2",
       "Rank 1",
       "Rank 3",
@@ -116,7 +116,7 @@ describe("Leaderboard", () => {
     await screen.findByText("College A");
 
     const badges = screen.getAllByRole("img", { name: /^Rank / });
-    expect(badges.map((badge) => badge.getAttribute("alt"))).toEqual([
+    expect(badges.map((badge) => badge.getAttribute("aria-label"))).toEqual([
       "Rank 1",
       "Rank 1",
       "Rank 3",

@@ -95,116 +95,118 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
   };
 
   // --- UI states ---
-  if (isPending) return <div>Loading...</div>;
+  if (isPending)
+    return (
+      <p className="py-10 font-mono text-sm uppercase tracking-[0.08em] text-ink">
+        <span aria-hidden="true" className="mr-2 inline-block h-3 w-2 animate-brut-blink bg-ink align-middle" />
+        Loading...
+      </p>
+    );
 
   if (isError) {
     return (
-      <div className="text-red-400">
+      <p
+        role="alert"
+        className="border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-4 py-3 font-semibold text-ink"
+      >
         Could not load accommodation. Please try again later.
-      </div>
+      </p>
     );
   }
+
+  const coordinators = (
+    <div className="space-y-2 text-sm text-ink-2">
+      <p>
+        To process your accommodation, a caution deposit{" "}
+        <span className="font-bold text-ink">(Refundable)</span> needs to be paid upfront.
+      </p>
+      <p className="eyebrow pt-2 text-ink-2">For further details, contact</p>
+      <p>
+        <span className="font-bold text-ink">Santhosh Kumar</span> · Coordinator ·
+        <WhatsAppLink phone="+919345890184" className="ml-1 whitespace-nowrap font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
+          +91 93458 90184
+        </WhatsAppLink>
+      </p>
+      <p>
+        <span className="font-bold text-ink">Ragul Prasath V</span> · Coordinator ·
+        <WhatsAppLink phone="+919345690254" className="ml-1 whitespace-nowrap font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
+          +91 9345690254
+        </WhatsAppLink>
+      </p>
+    </div>
+  );
+
+  const femaleNotice = (
+    <p className="flex items-start gap-2 border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-3 py-2 text-sm font-semibold text-ink">
+      <AlertCircle size={16} className="mt-0.5 shrink-0 text-acc" aria-hidden="true" />
+      <span>
+        Kindly note: Accommodation will not be provided for female participants.
+        We request them to make their own arrangements.
+      </span>
+    </p>
+  );
 
   // --- CASE 1: No request yet (null OR no id) ---
   if (!data || !data.id) {
   return !showTAndC ? (
-    <div className="flex flex-col items-center justify-center p-6 text-white space-y-6">
-      {/*<h2 className="text-3xl font-bold">Accommodation</h2>*/}
-      <p className="text-gray-300 text-center max-w-xl">
-        Apply for accommodation to ensure a comfortable stay during the event. 
+    <section className="brut-card w-full max-w-2xl space-y-6 p-6">
+      <p className="text-[15px] leading-relaxed text-ink">
+        Apply for accommodation to ensure a comfortable stay during the event.
         Please read the terms & conditions carefully before proceeding.
       </p>
-      <button
-        className="px-6 py-3 text-sm  mt-4 bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
-        onClick={() => setShowTAndC(true)}
-      >
-        Request for Accommodation
-      </button>
-      <div className="mt-6 text-gray-400 text-sm text-center space-y-1">
-        <p>
-          To process your accommodation, a caution deposit 
-          <span className="text-[#80466E]"> (Refundable)</span> needs to be paid upfront.
-        </p>
-        <p>
-          For further details, contact: <br />      
-          <span className="font-semibold">Santhosh Kumar </span> - Coordinator 
-          <WhatsAppLink phone="+919345890184" className="text-[#80466E] ml-1" message="Hello, I have a query regarding my accommodation.">
-            +91 93458 90184
-          </WhatsAppLink>
-          <br/>
-          <span className="font-semibold">Ragul Prasath V </span> - Coordinator 
-          <WhatsAppLink phone="+919345690254" className="text-[#80466E] ml-1" message="Hello, I have a query regarding my accommodation.">
-            +91 9345690254
-          </WhatsAppLink>
-          {/*<a href="tel:+918925617246" className="text-[#80466E] ml-1">+91 9345690254</a>*/}
-        </p>
-      </div>
-    </div>
+      <Button className="w-full whitespace-normal sm:w-auto" onClick={() => setShowTAndC(true)}>
+        Request accommodation ▸
+      </Button>
+      <div className="border-t-2 border-dashed border-line pt-5">{coordinators}</div>
+    </section>
   ) : (
-    <div className="flex flex-col gap-5 w-full text-white md:px-12 px-6">
-      <h3 className="text-2xl font-semibold text-[#80466E]">Terms & Conditions</h3>
+    <section className="brut-card w-full max-w-3xl space-y-5 p-6">
+      <h2 className="font-section text-3xl font-extrabold uppercase leading-[0.9] tracking-[-0.02em]">
+        Terms & Conditions
+      </h2>
       {user?.gender === "MALE" ? (
       <>
-      <p className="text-gray-300 text-sm">
-        Please ensure you apply only if required. Allocations once assigned cannot be changed. 
+      <p className="text-sm text-ink-2">
+        Please ensure you apply only if required. Allocations once assigned cannot be changed.
         Report any issues to the accommodation coordinators.
       </p>
 
-      <div className="bg-[#1E1E1E] rounded-xl p-5 text-sm space-y-2 shadow-inner border border-violet-700/30">
-        <p>• Accommodation for the second night will only be provided to participants advancing to the second round. Others must vacate accordingly.</p>
-        <p>• Accommodation is subject to availability.</p>
-        <p>• Plan your travel according to the event schedule.</p>
-        <p>• Arrive well in advance of your event start times.</p>
-        <p>• A security deposit of ₹300 must be paid in advance. The full amount will be refunded at checkout, provided no damages are incurred during the stay.</p>
-        <p>• Any damages to property will be charged to the individual responsible.</p>
-        <p>• Accommodation is provided on a shared basis. Room sharing will be done by the committee.</p>
-        <p>• Participants coming as a team must raise individual requests for accommodation. Team requests will not be considered collectively.</p>
-        <p></p>
-        <div className="flex items-center gap-2 text-red-400 font-medium">
-          <AlertCircle size={16} />
-          <span>
-            Kindly note: Accommodation will not be provided for female participants. 
-            We request them to make their own arrangements.
-          </span>
-        </div>
-      </div>
+      <ul className="space-y-2 border-2 border-ink bg-wcard p-5 text-sm leading-relaxed text-ink">
+        <li>◆ Accommodation for the second night will only be provided to participants advancing to the second round. Others must vacate accordingly.</li>
+        <li>◆ Accommodation is subject to availability.</li>
+        <li>◆ Plan your travel according to the event schedule.</li>
+        <li>◆ Arrive well in advance of your event start times.</li>
+        <li>◆ A security deposit of ₹300 must be paid in advance. The full amount will be refunded at checkout, provided no damages are incurred during the stay.</li>
+        <li>◆ Any damages to property will be charged to the individual responsible.</li>
+        <li>◆ Accommodation is provided on a shared basis. Room sharing will be done by the committee.</li>
+        <li>◆ Participants coming as a team must raise individual requests for accommodation. Team requests will not be considered collectively.</li>
+      </ul>
+      {femaleNotice}
 
-      <label className="flex items-center gap-3 text-sm cursor-pointer">
+      <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm font-semibold text-ink">
         <input
           type="checkbox"
-          className="accent-violet-500 w-4 h-4"
+          className="h-5 w-5 accent-[var(--acc)]"
           onChange={(e) => setAcceptTAndC(e.target.checked)}
         />
         <span>I accept all the terms and conditions above</span>
       </label>
 
-      <div className="flex justify-end gap-4 mt-6">
-        <button
-          className="px-6 py-2 rounded-full border border-gray-500 hover:bg-gray-800 transition-all"
-          onClick={() => setShowTAndC(false)}
-        >
+      <div className="flex flex-wrap justify-end gap-4 border-t-2 border-dashed border-line pt-5">
+        <Button variant="secondary" onClick={() => setShowTAndC(false)}>
           Cancel
-        </button>
+        </Button>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger
-            className={`px-8 py-3 rounded-full font-semibold transition-all ${
-              acceptTAndC
-                ? "bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
-                : "bg-gray-600 cursor-not-allowed"
-            }`}
-            disabled={!acceptTAndC}
-          >
-            Accept
+          <DialogTrigger asChild disabled={!acceptTAndC}>
+            <Button disabled={!acceptTAndC}>Accept</Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#121212] shadow-xl rounded-xl text-white border border-violet-700/30">
+          <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold text-[#80466E]">
-                Select Food Preference
-              </DialogTitle>
-              <div className="flex flex-col sm:flex-row gap-4 mt-5">
+              <DialogTitle>Food preference</DialogTitle>
+              <div className="mt-5 flex flex-col gap-4 sm:flex-row">
                 <Select onValueChange={(val) => setPreference(val)}>
-                  <SelectTrigger className="bg-[#1E1E1E] border border-gray-600 rounded-lg">
+                  <SelectTrigger>
                     <SelectValue placeholder="Choose Food Preference" />
                   </SelectTrigger>
                   <SelectContent>
@@ -212,73 +214,67 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
                     <SelectItem value="non-veg">Non Vegetarian</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
-                  className="bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-sm font-medium shadow-lg transition-all duration-700 ease-in-out"
-                  onClick={handleSubmit}
-                >
-                  Confirm
-                </Button>
+                <Button onClick={handleSubmit}>Confirm</Button>
               </div>
             </DialogHeader>
           </DialogContent>
         </Dialog>
       </div>
     </> ) : (
-      <div className="bg-[#1E1E1E] rounded-xl p-5 text-sm space-y-3 shadow-inner border border-violet-700/30">
-      <div className="flex items-center gap-2 text-red-400 font-medium">
-        <AlertCircle size={16} />
-        <span>
-          Kindly note: Accommodation will not be provided for female participants. 
-          We request them to make their own arrangements.
-        </span>
+      <div className="space-y-3 text-sm text-ink">
+        {femaleNotice}
+        <ul className="space-y-2 border-2 border-ink bg-wcard p-5">
+          <li>◆ Plan your travel according to the event schedule.</li>
+          <li>◆ Arrive well in advance of your event start times.</li>
+        </ul>
       </div>
-
-      <p>• Plan your travel according to the event schedule .</p>
-      <p>• Arrive well in advance of your event start times .</p>
-    </div>
   )}
-    </div>
+    </section>
   );
 }
 
 // --- CASE 2: Existing request ---
+const status = getAccommodation()?.status;
 return (
-  <div className="p-6 bg-[#1E1E1E] w-full lg:w-2/3 rounded-xl text-white space-y-6 shadow-md border border-violet-700/30">
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <p>
-        <span className="font-light">Accommodation Request ID:</span>{" "}
-        <span className="font-semibold text-[#80466E]">{getAccommodation()?.id}</span>
-      </p>
-      <div
-        className={`px-4 py-2 rounded-full text-sm font-medium ${
-          getAccommodation()?.status === "APPROVED"
-            ? "bg-green-500/20 text-green-400"
-            : getAccommodation()?.status === "PENDING"
-            ? "bg-yellow-500/20 text-yellow-400"
-            : "bg-red-500/20 text-red-400"
+  <section className="brut-card w-full max-w-3xl space-y-6 p-6">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <p className="eyebrow text-ink-2">Request ID</p>
+        <p className="mt-1 break-all font-mono text-sm font-bold text-ink">{getAccommodation()?.id}</p>
+      </div>
+      {/* Stamp: the label carries the state; colour only reinforces it. */}
+      <span
+        className={`self-start rotate-[1deg] border-2 border-ink px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.1em] shadow-brut-sm md:self-auto ${
+          status === "APPROVED"
+            ? "bg-r4 text-ink"
+            : status === "PENDING"
+            ? "bg-acc-2 text-ink"
+            : "bg-destructive text-white"
         }`}
       >
-        {getAccommodation()?.status}
-      </div>
+        {status}
+      </span>
     </div>
 
     <div>
-      <p className="font-medium mb-2">Your Notes</p>
-      <div className="bg-black/50 p-4 rounded-lg border border-gray-700">
+      <p className="eyebrow mb-2 text-ink-2">Your notes</p>
+      <div className="border-2 border-ink bg-wcard p-4 font-mono text-sm text-ink">
         {getAccommodation()?.notes}
       </div>
     </div>
 
-    {getAccommodation()?.status !== "PENDING" && (
+    {status !== "PENDING" && (
       <div>
-        <p className="font-medium mb-2">Allocated Room</p>
-        <div className="bg-black/50 p-4 rounded-lg border border-gray-700">
+        <p className="eyebrow mb-2 text-ink-2">Allocated room</p>
+        <div className="border-2 border-ink bg-wcard p-4 font-display text-3xl uppercase leading-none text-ink">
           {getAccommodation()?.user?.profile?.accommodatedRoom}
         </div>
       </div>
     )}
-    <CoordinatorInfo />
-  </div>
+    <div className="border-t-2 border-dashed border-line pt-5">
+      <CoordinatorInfo />
+    </div>
+  </section>
 );
 
 };

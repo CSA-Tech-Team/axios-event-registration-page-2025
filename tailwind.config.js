@@ -13,16 +13,33 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
+      padding: "var(--gutter)",
       screens: {
-        "2xl": "1400px",
+        "2xl": "1180px",
       },
     },
     extend: {
       fontFamily: {
-        'montserrat': ['Montserrat'],
-        'lato': ['Lato'],
-        'garamond': ['Garamond']
+        sans: ["var(--font-body)"],
+        body: ["var(--font-body)"],
+        display: ["var(--font-display)"],
+        section: ["var(--font-section)"],
+        note: ["var(--font-note)"],
+        mono: ["var(--font-mono)"],
+      },
+      maxWidth: {
+        content: "var(--content)",
+        board: "1440px",
+      },
+      height: {
+        header: "var(--header-h)",
+      },
+      boxShadow: {
+        "brut-sm": "var(--shadow-sm)",
+        "brut-md": "var(--shadow-md)",
+        brut: "6px 6px 0 var(--ink)",
+        "brut-lg": "var(--shadow-lg)",
+        "brut-press": "2px 2px 0 var(--ink)",
       },
       backgroundImage: {
         'register': "url('./assets/loginComp.svg')",
@@ -30,10 +47,20 @@ export default {
         'mailBg':"url('./assets/mail-bg.svg')"
       },
       colors: {
-        primaryText: "var(--Accent, #E2A52A)",
-        Violet: "var(--Secondary, #5D3288)",
+        paper: "var(--paper)",
+        wcard: "var(--wcard)",
+        ink: { DEFAULT: "var(--ink)", 2: "var(--ink2)" },
+        line: "var(--line)",
+        acc: { DEFAULT: "var(--acc)", 2: "var(--acc2)" },
+        term: { DEFAULT: "var(--term)", fg: "var(--termfg)" },
+        r1: "var(--r1)",
+        r2: "var(--r2)",
+        r3: "var(--r3)",
+        r4: "var(--r4)",
+        r5: "var(--r5)",
+        r6: "var(--r6)",
+        r7: "var(--r7)",
         border: "hsl(var(--border))",
-        backgroundColor: "#171717",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
