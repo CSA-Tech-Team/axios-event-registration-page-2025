@@ -62,6 +62,11 @@ const FIELD_INPUT =
 const FIELD_TRIGGER =
   "min-h-0 border-0 bg-transparent px-0 py-2 focus-visible:shadow-none data-[state=open]:shadow-none";
 
+// The API stores numbers in E.164 ("+919876543210"), but older rows were saved
+// as "+91 9876543210". Strip the prefix in either form, never a fixed length.
+const nationalNumber = (phone?: string | null) =>
+  phone?.replace(/^\+91\s*/, "") ?? "";
+
 const EditProfile = () => {
   const { getUser } = useAuthStore();
   const user: any = getUser();
@@ -85,7 +90,7 @@ const EditProfile = () => {
   }, [showResend, time]);
   useEffect(() => {
     form.setValue("email", user?.email);
-    form.setValue("phoneNumber", user?.phoneNumber?.slice(4));
+    form.setValue("phoneNumber", nationalNumber(user?.phoneNumber));
     form.setValue("collegeName", user?.profile?.collegeName);
     form.setValue("firstName", user?.profile?.firstName);
     form.setValue("lastName", user?.profile?.lastName);
@@ -118,7 +123,7 @@ const EditProfile = () => {
     defaultValues: {
       firstName: (user?.profile?.firstName as any) || "",
       lastName: (user?.profile?.lastName as any) || "",
-      phoneNumber: (user?.phoneNumber?.slice(4) as any) || "",
+      phoneNumber: nationalNumber(user?.phoneNumber) as any,
       email: (user?.email as any) || "",
       collegeName: (user?.profile?.collegeName as any) || "",
       gender: (user?.gender as any) || "",
