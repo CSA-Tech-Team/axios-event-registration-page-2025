@@ -25,7 +25,9 @@ import team from "@/assets/teams.svg";
 import accomodation from "@/assets/accomodation.svg";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useAuthStore } from "@/store/ApiStates";
-import { isAuthenticated } from "@/utils/common";
+import { useIsSignedIn } from "@/hooks/useIsSignedIn";
+import { signOut } from "@/lib/auth-client";
+import { SIGN_OUT_ERROR, SIGN_OUT_ERROR_TITLE } from "@/lib/auth-errors";
 import {
   Tooltip,
   TooltipContent,
@@ -45,6 +47,8 @@ const NavBar: React.FC = () => {
   const { getIsProfileCompleted } = useAuthStore();
   const { user } = useAuthStore.getState();
   const [open, setOpen] = useState(false); // for logout dialog
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const signedIn = useIsSignedIn() === true;
   const navRef = useRef<HTMLDivElement | null>(null);
 
   //
@@ -175,9 +179,28 @@ const NavBar: React.FC = () => {
   };
 
   const { clearTokens } = useAuthStore();
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+    // The Google session is a server-side cookie; clearing local state while
+    // it is still alive would just bounce the user from /signin back to
+    // /profile. So local state only goes once the server confirms.
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Sign-out failed", err);
+      toast({
+        title: SIGN_OUT_ERROR_TITLE,
+        description: SIGN_OUT_ERROR,
+        variant: "destructive",
+      });
+      setIsSigningOut(false);
+      return;
+    }
     clearTokens();
     localStorage.clear();
+    setIsSigningOut(false);
+    setOpen(false);
     navigate(ERouterPaths.SIGNIN);
   };
 
@@ -283,20 +306,20 @@ const NavBar: React.FC = () => {
                   ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
                   : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
               onClick={() => {
-                if (isAuthenticated()) {
+                if (signedIn) {
                   setOpen(true); // open confirm dialog
                 } else {
                   navigate(ERouterPaths.SIGNIN);
                 }
               }}
             >
-              {isAuthenticated() ? (
+              {signedIn ? (
                 <LogOut style={{ width: "20px", height: "20px" }} />
               ) : (
                 <SquareArrowOutUpRightIcon style={{ width: "20px", height: "20px" }} />
               )}
               <span className="hidden sm:hidden md:block text-sm font-medium">
-                {isAuthenticated() ? "Logout" : "Signin"}
+                {signedIn ? "Logout" : "Signin"}
               </span>
             </div>
 
@@ -320,8 +343,9 @@ const NavBar: React.FC = () => {
                   <Button
                     className="bg-red-600 text-white"
                     onClick={handleLogout}
+                    disabled={isSigningOut}
                   >
-                    Logout
+                    {isSigningOut ? "Logging out…" : "Logout"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
