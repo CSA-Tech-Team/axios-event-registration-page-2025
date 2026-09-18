@@ -84,10 +84,19 @@ const TeamCard: FC<TeamCardProps> = ({ data }) => {
       </Dialog>
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col gap-2 mb-4">
         <div className="text-2xl font-extrabold text-[#80466E] tracking-wide">
           {data?.name}
         </div>
+        {/* A team of one made for a migrated member who signed up for a team
+            event without a team. They fill it by inviting people, or leave it
+            and join another team. It becomes an ordinary team once it
+            registers for the event. */}
+        {data?.teamType === "ENROLLED" && (
+          <div className="self-start rounded-md border border-[#EFAD8B]/50 bg-[#EFAD8B]/10 px-2 py-1 text-xs text-[#EFAD8B]">
+            Waiting for members · open this team to invite people
+          </div>
+        )}
       </div>
 
       {/* Profile + Details */}

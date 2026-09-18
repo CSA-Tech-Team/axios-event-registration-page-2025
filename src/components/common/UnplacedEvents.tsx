@@ -8,9 +8,10 @@ import useAxios from "@/hooks/useAxios";
  * Events the person opted into but still has no team for - the "enrolled"
  * category the migration imports.
  *
- * They are not registered for those events and cannot be until a team meets
- * the event's minimum, so this says so plainly and points at the Create button
- * and their invitations. Renders nothing when they owe no team.
+ * The import gives each of them a team of one (flagged ENROLLED) for each
+ * such event. They are not registered until a team meets the event's minimum,
+ * so this names that team and spells out the two choices: invite members into
+ * it, or join another team. Renders nothing when they owe no team.
  */
 const UnplacedEvents = () => {
   const { getWithAuth } = useAxios();
@@ -31,33 +32,42 @@ const UnplacedEvents = () => {
         You still need a team
       </h2>
       <p className="text-sm text-gray-400 mb-3">
-        You signed up for these events, but they are played in teams and you are
-        not in one that fits yet. You are not registered for them until you are.
+        You signed up for these events, but they are played in teams and your
+        team is not big enough yet. You are not registered for them until it is.
       </p>
 
-      <ul className="flex flex-col gap-2 mb-4">
+      <ul className="flex flex-col gap-3 mb-4">
         {events.map((event: any) => (
-          <li
-            key={event.eventId}
-            className="flex items-center justify-between gap-3 text-sm"
-          >
-            <span className="text-gray-200">{event.title ?? event.eventId}</span>
-            <span className="text-xs text-gray-500">
-              needs {event.teamMinSize}
-              {event.teamMaxSize !== event.teamMinSize
-                ? `-${event.teamMaxSize}`
-                : ""}{" "}
-              members
-            </span>
+          <li key={event.eventId} className="text-sm">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-gray-200">
+                {event.title ?? event.eventId}
+              </span>
+              <span className="text-xs text-gray-500">
+                needs {event.teamMinSize}
+                {event.teamMaxSize !== event.teamMinSize
+                  ? `-${event.teamMaxSize}`
+                  : ""}{" "}
+                members
+              </span>
+            </div>
+            {event.teamName && (
+              <div className="mt-1 text-xs text-gray-400">
+                Your team for it:{" "}
+                <span className="text-[#EFAD8B]">{event.teamName}</span>
+              </div>
+            )}
           </li>
         ))}
       </ul>
 
       <p className="text-xs text-gray-400">
-        Use <span className="text-gray-200">Create</span> above to start a team
-        and invite people, or accept an invitation from the Invitations page to
-        join one that already exists. Once your team is the right size, come
-        back to the event and register.
+        You have two choices for each one:{" "}
+        <span className="text-gray-200">invite members</span> into your team
+        below until it is big enough, or{" "}
+        <span className="text-gray-200">join another team</span> by accepting an
+        invitation from the Invitations page. Once a team is the right size, its
+        owner registers it for the event.
       </p>
     </div>
   );
