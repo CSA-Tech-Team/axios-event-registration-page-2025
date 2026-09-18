@@ -6,7 +6,8 @@ FROM node:22-alpine AS build
 WORKDIR /app
 
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+<<<<<<< HEAD
+RUN corepack enable && yarn install --frozen-lockfile
 
 COPY . .
 
@@ -22,3 +23,6 @@ COPY .docker/config/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /var/www/html
 
 EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1
