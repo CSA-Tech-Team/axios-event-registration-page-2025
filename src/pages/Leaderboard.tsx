@@ -1,153 +1,190 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import useAxios from "@/hooks/useAxios";
+import { ApiPaths } from "@/constants/enum";
 import lead1 from "@/assets/lead1.svg";
 import lead2 from "@/assets/lead2.svg";
 import lead3 from "@/assets/lead3.svg";
 import crown from "@/assets/crown.svg";
-// import useAxios from "@/hooks/useAxios";
-//import { socket } from "@/context/Socket";
+
+// Matches the server cache window, so polling never asks for work the API has
+// not redone yet. React Query pauses this while the tab is in the background.
+const REFRESH_INTERVAL_MS = 30_000;
+
+interface LeaderboardEntry {
+  rank: number;
+  id: string;
+  name: string | null;
+  collegeName: string | null;
+  totalScore: number;
+  eventsPlayed: number;
+}
+
+interface LeaderboardOverview {
+  users: LeaderboardEntry[];
+  teams: LeaderboardEntry[];
+  colleges: LeaderboardEntry[];
+  generatedAt: string;
+}
+
+type BoardKey = "colleges" | "teams" | "users";
+
+const BOARDS: { key: BoardKey; label: string }[] = [
+  { key: "colleges", label: "Colleges" },
+  { key: "teams", label: "Teams" },
+  { key: "users", label: "Individuals" },
+];
+
+// The winner sits in the middle, so the three podium slots render 2nd, 1st, 3rd.
+const PODIUM_ORDER = [1, 0, 2];
+
+// Keyed by rank rather than by slot: tied entries share a rank, and so must
+// share a badge, height and colour instead of being dressed as 1-2-3 by the
+// order they happen to arrive in.
+const PODIUM_STYLES: Record<number, { height: string; background: string; badge: string }> = {
+  1: { height: "h-full", background: "bg-[#311A49]", badge: lead1 },
+  2: { height: "h-2/3", background: "bg-[#1F102D]", badge: lead2 },
+  3: { height: "h-1/3", background: "bg-[#1F102D]", badge: lead3 },
+};
+
+function podiumStyle(rank: number) {
+  return PODIUM_STYLES[rank] ?? PODIUM_STYLES[3];
+}
+
+function entryLabel(entry: LeaderboardEntry): string {
+  return entry.name?.trim() || entry.id;
+}
+
+function entrySubLabel(entry: LeaderboardEntry, board: BoardKey): string | null {
+  if (board === "colleges") {
+    return `${entry.eventsPlayed} ${entry.eventsPlayed === 1 ? "entry" : "entries"}`;
+  }
+  return entry.collegeName;
+}
 
 export const Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  //const [isConnected, setIsConnected] = useState(socket.connected);
+  const [board, setBoard] = useState<BoardKey>("colleges");
+  const { getWithoutAuth } = useAxios();
 
-  // function onConnect() {
-  //   setIsConnected(true);
-  // }
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["leaderboard"],
+    queryFn: async () => {
+      const response = await getWithoutAuth<LeaderboardOverview>(ApiPaths.LEADERBOARD);
+      return response?.data;
+    },
+    refetchInterval: REFRESH_INTERVAL_MS,
+    staleTime: REFRESH_INTERVAL_MS,
+  });
 
-  // function onDisconnect() {
-  //   setIsConnected(false);
-  // }
-
-  /*useEffect(() => {
-    function onGetLeaderboard(value: any[]) {
-      if (value && value.length > 2) {
-        [value[0], value[1]] = [value[1], value[0]];
-      }
-      setLeaderboard(value);
-    }
-
-    console.log(isConnected);
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("leaderboard", onGetLeaderboard);
-    socket.emit("requestLeaderboard");
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("leaderboard", onGetLeaderboard);
-    };
-  }, []);*/
+  const entries = data?.[board] ?? [];
+  const podium = PODIUM_ORDER.map((index) => entries[index]);
+  const rest = entries.slice(3);
 
   return (
-    // <></>
-    
-    <main className="fixed flex items-center justify-center w-full h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-indigo-800">
-      <div className="text-center p-6">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg tracking-wide">
-          Coming Soon
-        </h1>
-        <p className="mt-4 text-base sm:text-lg md:text-xl text-indigo-200 font-medium">
-          Stay tuned!
-        </p>
-        <div className="mt-8 flex justify-center">
-          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1"></div>
-          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 [animation-delay:200ms]"></div>
-          <div className="h-2 w-2 bg-indigo-400 rounded-full animate-bounce mx-1 [animation-delay:400ms]"></div>
-        </div>
+    <main className="h-[92vh] w-full overflow-y-auto overflow-x-hidden text-white">
+      <div className="flex flex-wrap items-center justify-center gap-2 px-4 pt-6">
+        {BOARDS.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setBoard(key)}
+            className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+              board === key
+                ? "bg-[#5D3288] text-white"
+                : "bg-[#1F102D] text-indigo-200 hover:bg-[#311A49]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
       </div>
+
+      {isLoading && (
+        <p className="py-16 text-center text-indigo-200">Loading leaderboard...</p>
+      )}
+
+      {isError && (
+        <p className="py-16 text-center text-red-400">
+          Could not load the leaderboard. Please try again shortly.
+        </p>
+      )}
+
+      {!isLoading && !isError && entries.length === 0 && (
+        <p className="py-16 text-center text-indigo-200">
+          No scores have been posted yet. Check back once events get underway.
+        </p>
+      )}
+
+      {entries.length > 0 && (
+        <div className="flex w-full flex-col gap-6 px-4 pb-10 pt-8 lg:flex-row">
+          <section className="w-full lg:w-2/3">
+            <div className="flex justify-center">
+              <img src={crown} alt="" className="h-20 w-20" />
+            </div>
+
+            <div className="mx-auto mt-10 flex h-[40vh] max-w-2xl items-end gap-2">
+              {podium.map((entry, slot) => {
+                if (!entry) return <div key={slot} className="w-1/3" />;
+                const style = podiumStyle(entry.rank);
+
+                return (
+                  <div
+                    key={entry.id}
+                    // min-h-fit keeps the short third-place bar from spilling its
+                    // name and score out below the card onto the page background.
+                    className={`${style.height} ${style.background} flex min-h-fit w-1/3 flex-col items-center justify-start rounded-2xl px-2 pb-4`}
+                  >
+                    <img
+                      src={style.badge}
+                      alt={`Rank ${entry.rank}`}
+                      className="-mt-12 h-24 w-24"
+                    />
+                    <div className="mt-3 w-full text-center">
+                      <div className="truncate px-2 text-sm md:text-base">
+                        {entryLabel(entry)}
+                      </div>
+                      <div className="mt-1 text-xl font-semibold md:text-3xl">
+                        {entry.totalScore}
+                      </div>
+                      <div className="mt-1 truncate px-2 text-xs text-indigo-300">
+                        {entrySubLabel(entry, board)}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="w-full rounded-2xl bg-[#1F102D] p-4 lg:w-1/3">
+            {rest.length === 0 ? (
+              <p className="py-8 text-center text-sm text-indigo-300">
+                Only the top spots are filled so far.
+              </p>
+            ) : (
+              <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
+                {rest.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="flex items-center justify-between gap-3 border-b border-[#5F59598A] py-3"
+                  >
+                    <span className="min-w-[2.5rem] rounded-full bg-[#311A49] px-3 py-1 text-center text-sm">
+                      {entry.rank}
+                    </span>
+                    <div className="flex-1 overflow-hidden">
+                      <div className="truncate text-sm">{entryLabel(entry)}</div>
+                      <div className="truncate text-xs text-indigo-300">
+                        {entrySubLabel(entry, board)}
+                      </div>
+                    </div>
+                    <span className="text-sm font-semibold">{entry.totalScore}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      )}
     </main>
   );
 };
-
-{/*}
-    <main className=" h-[92vh] lg:flex  w-full gap-4 lg:h-full overflow-hidden">
-      {/* <div className="w-full h-full lg:block"> /}
-      {/* <div className="text-white px-10 py-5 flex justify-start ">
-        <div className="mx-2 text-2xl font-semibold p-12 ">Leaderboard</div>
-      </div> /}
-      <div className="flex  h-[92vh] mb-[8vh]  w-full flex-col md:flex-row overflow-auto lg:overflow-hidden overflow-x-hidden">
-        <div className="h-[70vh] w-full md:w-2/3 ">
-          <div className="flex justify-center">
-            <img
-              src={crown}
-              alt="Crown"
-              style={{ width: "100px", height: "100px" }}
-            />
-          </div>
-          {/* Adjust margin top on small screens /}
-          <div className="flex h-1/2 md:h-full items-end mx-10 mt-8 md:mt-0 ">
-            {leaderboard?.map(
-              (item: any, index) =>
-                index < 3 && (
-                  <div
-                    key={item?.id}
-                    className={`  ${
-                      index == 0 ? "h-2/3" : index == 1 ? "h-full" : "h-1/3"
-                    } ${
-                      index == 0
-                        ? "bg-[#1F102D]"
-                        : index == 1
-                        ? "bg-[#311A49]"
-                        : "bg-[#1F102D]"
-                    }  w-1/3 rounded-2xl flex flex-col justify-start items-center text-white`}
-                  >
-                    <img
-                      src={index == 0 ? lead2 : index == 1 ? lead1 : lead3}
-                      // alt={`${item.content} icon`}
-                      className="-mt-16"
-                      style={{ width: "110px", height: "110px" }}
-                    />
-                    <div className=" md:mt-4 w-full flex flex-col items-center ">
-                      <div className="w-full text-ellipsis text-center px-6">
-                        {item?.collegeName || "N/A"}
-                      </div>
-                      <div
-                        className={`text-${
-                          index === 1
-                            ? "white"
-                            : index === 0
-                            ? "text-red-500"
-                            : "text-blue-500"
-                        } md:text-3xl`}
-                      >
-                        {item?.totalScore}
-                      </div>
-                    </div>
-                  </div>
-                )
-            )}
-          </div>
-        </div>
-
-        {/* Second component for remaining players *}
-        <div className="text-white w-full bg-[#1F102D] md:w-1/3 p-3 md:p-1 m-1 flex flex-col  h-1/2 md:h-full scrollbar overflow-x-hidden">
-          <div className=" mx-3 rounded-2xl p-5 overflow-auto ">
-            {leaderboard?.map(
-              (player: any, index) =>
-                index > 2 && (
-                  <div
-                    key={index}
-                    className="bg-[#1F102D] flex justify-between items-center mx-3 border-b border-[#5F59598A]"
-                  >
-                    {/* Position /}
-                    <div className="rounded-full bg-[#311A49] px-4 py-2 m-2">
-                      {index + 1} {/* Displaying index as position /}
-                    </div>
-                    {/* Name /}
-
-                    <div className="p-2 m-2 w-3/4 truncate">
-                      {player.collegeName}
-                    </div>
-                    {player?.totalScore}
-                    <div className="p-2 m-2">{player.score}</div>
-                  </div>
-                )
-            )}
-          </div>
-        </div>
-      </div>
-    </main>
-*/}

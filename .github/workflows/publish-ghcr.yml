@@ -11,7 +11,7 @@ on:
 
 env:
   IMAGE_NAME: ghcr.io/csa-tech-team/axios-event-registration-page-2025
-  BACKEND_URL: https://darpanet.axios.psgtech.ac.in/api
+  BACKEND_URL: https://darpanet.psgtech.ac.in/api
 
 jobs:
   publish:

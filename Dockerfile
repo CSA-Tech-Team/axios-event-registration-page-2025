@@ -1,24 +1,28 @@
-FROM node:22-bookworm-slim AS build
+# Vite inlines VITE_* variables at build time, so the API URL is baked into the
+# bundle here and cannot be changed by the running container. Point it at a new
+# host by rebuilding with a different VITE_DARPANET_HOST.
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
 COPY package.json yarn.lock ./
+<<<<<<< HEAD
 RUN corepack enable && yarn install --frozen-lockfile
 
 COPY . .
 
-# Vite substitutes this public URL into the static bundle at build time.
-ARG VITE_DARPANET_HOST=https://darpanet.axios.psgtech.ac.in/api
-ENV VITE_DARPANET_HOST=${VITE_DARPANET_HOST}
-
+ARG VITE_DARPANET_HOST
+ENV VITE_DARPANET_HOST=$VITE_DARPANET_HOST
+RUN test -n "$VITE_DARPANET_HOST" || (echo "VITE_DARPANET_HOST build-arg is required" && exit 1)
 RUN yarn build
 
-FROM nginx:1.27-alpine AS runtime
+# ---------------------------------------------------------------------------
+FROM nginx:1.27-alpine
 
-COPY nginx.frontend.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY .docker/config/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/dist /var/www/html
 
-EXPOSE 80
+EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1
+  CMD wget -q -O /dev/null http://127.0.0.1:3000/ || exit 1

@@ -3,7 +3,7 @@
 The frontend image is published from `master` to
 `ghcr.io/csa-tech-team/axios-event-registration-page-2025` as `latest` and
 immutable `sha-<commit>` tags. The public API URL is built into the Vite bundle
-as `https://darpanet.axios.psgtech.ac.in/api`.
+as `https://darpanet.psgtech.ac.in/api`.
 
 Create a Portainer stack from `docker-compose.yml`. Add `IMAGE_TAG` in
 Portainer's environment-variable UI: use `latest` to track the newest published
