@@ -11,6 +11,7 @@ import { useAuthStore } from "@/store/ApiStates";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { teamRequirementMessage, useTeamRequirement } from "@/hooks/useTeamRequirement";
 
 export const EventsPage = () => {
   const [showEvent, setShowEvent] = useState(false);
@@ -33,6 +34,7 @@ export const EventsPage = () => {
     console.log(getEvents());
   }, []);
   const windowSize = useWindowDimensions();
+  const teamRequirement = useTeamRequirement(getEvents() ?? []);
   const reset = () => {
     setShowEvent(false);
   };
@@ -85,7 +87,13 @@ export const EventsPage = () => {
                   to={`${ERouterPaths.EVENTS}/${elt.id}`}
                   className="group flex w-full focus-visible:outline-offset-8"
                 >
-                  <EventCard data={elt} index={index} />
+                  <EventCard
+                    data={elt}
+                    index={index}
+                    teamNotice={teamRequirementMessage(
+                      teamRequirement[elt.id] ?? { status: "n/a" },
+                    )}
+                  />
                 </Link>
               </li>
             ))}

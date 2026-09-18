@@ -389,6 +389,7 @@ import { Timer, Layers, Calendar, Users } from "lucide-react";
 import VioletProfile from "@/assets/violetProfile.svg";
 import { Button } from "../ui/button";
 import { eventLogo } from "@/lib/eventArt";
+import { teamRequirementMessage, useTeamRequirement } from "@/hooks/useTeamRequirement";
 import {
   Dialog,
   DialogContent,
@@ -422,7 +423,6 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     getIsProfileCompleted,
     getRegisteredEvents,
     setRegisteredEvents,
-    getTeams,
   } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -551,6 +551,11 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
       });
     },
   });
+
+  const teamRequirement = useTeamRequirement(data ? [data] : []);
+  const teamMessage = data?.id
+    ? teamRequirementMessage(teamRequirement[data.id] ?? { status: "n/a" })
+    : null;
 
   if (!data) {
     return <div className="p-6 text-lg font-semibold text-ink">Event not found</div>;
@@ -692,43 +697,21 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
             "enrolled" case the migration imports. They cannot register until a
             team meets the event's minimum, so send them where teams are made
             rather than leaving them with a disabled button and no explanation. */}
-        {(() => {
-          if (!user || user?.role === 'ALUMNI') return null;
-          if (!(data?.teamMaxSize > 1)) return null;
-          if (isRegistered) return null;
-
-          const teams = (getTeams() || []) as any[];
-          const min = data?.teamMinSize ?? 1;
-          const max = data?.teamMaxSize ?? 1;
-
-          const usable = teams.find((team: any) => {
-            const size = team?.members?.length ?? 0;
-            return size >= min && size <= max;
-          });
-          if (usable) return null;
-
-          const biggest = teams.reduce(
-            (largest: number, team: any) =>
-              Math.max(largest, team?.members?.length ?? 0),
-            0,
-          );
-
-          return (
-            <div className="border-2 border-ink border-l-[8px] border-l-acc-2 bg-wcard p-4">
-              <p className="mb-3 text-sm text-ink">
-                {biggest === 0
-                  ? `This event is played in teams of ${min} to ${max}. You are not in a team yet.`
-                  : `This event needs at least ${min} members. Your largest team has ${biggest}.`}
-              </p>
-              <Button
-                className="w-full whitespace-normal sm:w-auto"
-                onClick={() => navigate(ERouterPaths.TEAMS)}
-              >
-                Join or create a team to participate
-              </Button>
-            </div>
-          );
-        })()}
+        {!isRegistered && teamMessage && (
+          <div
+            role="status"
+            className="border-2 border-ink border-l-[8px] border-l-acc-2 bg-wcard p-4"
+          >
+            <p className="eyebrow mb-1 text-ink">Team needed</p>
+            <p className="mb-3 text-sm text-ink">{teamMessage}</p>
+            <Button
+              className="w-full whitespace-normal sm:w-auto"
+              onClick={() => navigate(ERouterPaths.TEAMS)}
+            >
+              Join or create a team to participate
+            </Button>
+          </div>
+        )}
 
         {/* Conveners */}
         <div className="border-t-2 border-dashed border-line pt-5">

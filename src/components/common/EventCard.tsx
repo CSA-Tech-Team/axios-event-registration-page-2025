@@ -5,6 +5,8 @@ import { eventAccent, eventLogo, eventTilt } from "@/lib/eventArt";
 interface EventCardProps {
   data: any;
   index?: number;
+  /** Set when the viewer has no team that fits this event's size. */
+  teamNotice?: string | null;
 }
 
 /**
@@ -12,7 +14,7 @@ interface EventCardProps {
  * spectrum-coloured hard shadow, a small tilt that straightens on hover/focus.
  * The parent supplies the link, so nothing inside is interactive.
  */
-export const EventCard: FC<EventCardProps> = ({ data, index = 0 }) => {
+export const EventCard: FC<EventCardProps> = ({ data, index = 0, teamNotice }) => {
   const logo = eventLogo(data);
   const style = {
     "--tilt": `${eventTilt(index)}deg`,
@@ -53,6 +55,13 @@ export const EventCard: FC<EventCardProps> = ({ data, index = 0 }) => {
       <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-2">
         {data?.description}
       </p>
+
+      {teamNotice && (
+        <p className="mt-4 border-2 border-ink border-l-[6px] border-l-acc-2 bg-wcard px-3 py-2 text-sm text-ink">
+          <span className="eyebrow mr-1.5">Team needed ·</span>
+          {teamNotice} Join or create a team to participate.
+        </p>
+      )}
 
       <div className="mt-auto pt-5">
         <div className="flex items-center justify-between border-t-2 border-dashed border-line pt-4">
