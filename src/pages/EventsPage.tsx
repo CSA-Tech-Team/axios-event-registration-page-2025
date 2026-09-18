@@ -76,7 +76,11 @@ export const EventsPage = () => {
 
       <div
         className={`mt-12 grid gap-8 md:gap-10 ${
-          showEvent ? "lg:grid-cols-2" : "grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]"
+          showEvent
+            ? "lg:grid-cols-2"
+            : // Each card keeps its own height: a team notice grows only the
+              // card it belongs to, instead of stretching its row-mates.
+              "items-start grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]"
         }`}
       >
         <ul className="contents">
