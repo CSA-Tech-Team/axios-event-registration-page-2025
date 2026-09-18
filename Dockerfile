@@ -19,6 +19,8 @@ RUN yarn build
 # ---------------------------------------------------------------------------
 FROM nginx:1.27-alpine
 
+RUN apk add wget
+
 COPY .docker/config/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /var/www/html
 
