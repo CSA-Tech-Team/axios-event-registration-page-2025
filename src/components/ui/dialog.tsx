@@ -43,7 +43,7 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center border-2 border-ink bg-wcard text-ink shadow-brut-sm transition-transform hover:-translate-x-px hover:-translate-y-px disabled:pointer-events-none">
+      <DialogPrimitive.Close className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center border-2 border-ink bg-wcard text-ink shadow-brut-sm transition-transform hover:-translate-x-px hover:-translate-y-px disabled:pointer-events-none">
         <Cross2Icon className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
@@ -58,7 +58,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col space-y-2 pr-10 text-left",
+      "flex flex-col space-y-2 pr-12 text-left",
       className
     )}
     {...props}

@@ -24,7 +24,7 @@ export type TeamRequirement =
 export function useTeamRequirement(events: any[]): Record<string, TeamRequirement> {
   const signedIn = useIsSignedIn();
   const { getWithAuth } = useAxios();
-  const { setTeams, setUser } = useAuthStore();
+  const { setTeams, setUser, setIsProfileCompleted } = useAuthStore();
 
   const { data: teams } = useQuery({
     queryKey: ["teams"],
@@ -41,6 +41,7 @@ export function useTeamRequirement(events: any[]): Record<string, TeamRequiremen
     queryFn: async () => {
       const response: any = await getWithAuth(ApiPaths.USER);
       setUser(response?.data);
+      setIsProfileCompleted(response?.data?.isProfileCompleted);
       return response?.data;
     },
     enabled: signedIn === true,

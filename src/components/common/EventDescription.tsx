@@ -411,6 +411,7 @@ import useAxios from "@/hooks/useAxios";
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useIsSignedIn } from "@/hooks/useIsSignedIn";
 
 interface EventDescriptionProps {
   data: any;
@@ -418,10 +419,8 @@ interface EventDescriptionProps {
 
 export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
   const {
-    getOwnedTeams,
     setOwnedTeams,
     getIsProfileCompleted,
-    getRegisteredEvents,
     setRegisteredEvents,
   } = useAuthStore();
   const navigate = useNavigate();
@@ -462,62 +461,40 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     }
   }, [data]);
 
-  // Fetch owned teams on dialog open
-  useQuery({
+  // Teams this person owns (only an owner can register a team). Loaded as
+  // soon as they are signed in, so the Register click can decide straight
+  // away instead of bouncing to Teams on the first try.
+  const signedIn = useIsSignedIn();
+  const { data: ownedTeams } = useQuery({
     queryKey: ["ownedTeams"],
     queryFn: async () => {
-      const res = await getWithAuth(ApiPaths.TEAM);
+      const res: any = await getWithAuth(ApiPaths.TEAM + "?owned=true");
       setOwnedTeams(res?.data || []);
-      return res?.data;
+      return (res?.data || []) as any[];
     },
-    enabled: open,
+    enabled: signedIn === true,
   });
 
   // Fetch registered events
-  useQuery({
+  const { data: registeredEvents } = useQuery({
     queryFn: async () => {
       const response: any = await getWithAuth(ApiPaths.REGISTERED_EVENT);
       setRegisteredEvents(response?.data);
-      return response?.data;
+      return (response?.data || []) as any[];
     },
     queryKey: ["registeredEvents"],
+    enabled: signedIn === true,
   });
 
-  // --- Registration check logic using eventId from URL ---
+  // Registered = this event is in the person's registered list. Recomputed
+  // when that list arrives (the store getter alone never re-ran).
   useEffect(() => {
-    const registeredEvents = getRegisteredEvents() || [];
-    const ownedTeams = getOwnedTeams() || [];
-    console.log("Checking registration for eventId:", eventId);
-    console.log("Registered Event", registeredEvents);
-    console.log("Owned Teams", ownedTeams);
-    let foundTeam: any = null;
-    // Find if any owned team is registered for this eventId
-    for (const regEvent of registeredEvents) {
-      if (
-        regEvent.id?.toString() === eventId?.toString() 
-      ) {
-        foundTeam = true;
-        break;
-      }
-    }
-    if (foundTeam) {
-      setIsRegistered(true);
-      //setRegisteredTeamName(foundTeam?.name || null);
-    } else {
-      setIsRegistered(false);
-      //setRegisteredTeamName(null);
-    }
-  }, [getRegisteredEvents, getOwnedTeams, eventId]);
-
-  useEffect(() => {
-    toast({
-      title: "Event Registration Closed",
-      description:
-        "Online registrations are closed. You can still participate through on-spot registration by visiting the college.",
-      variant: "destructive", // or "default" if you prefer normal color
-      duration: 8000, // show for 8 seconds
-    });
-  }, []);
+    setIsRegistered(
+      (registeredEvents ?? []).some(
+        (regEvent: any) => regEvent?.id?.toString() === eventId?.toString(),
+      ),
+    );
+  }, [registeredEvents, eventId]);
 
   // Register team mutation
   const registerTeamMutation = useMutation({
@@ -544,7 +521,8 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     },
     onSuccess: () => {
       setOpen(false);
-      queryClient.invalidateQueries(["registeredEvents"]);
+      queryClient.invalidateQueries({ queryKey: ["registeredEvents"] });
+      queryClient.invalidateQueries({ queryKey: ["ownedTeams"] });
       toast({
         title: "Success",
         description: "Team registered successfully",
@@ -560,6 +538,14 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
   if (!data) {
     return <div className="p-6 text-lg font-semibold text-ink">Event not found</div>;
   }
+
+  const minSize = data?.teamMinSize ?? 1;
+  const maxSize = data?.teamMaxSize ?? 1;
+  const sizeLabel = minSize === maxSize ? `${minSize}` : `${minSize} to ${maxSize}`;
+  const fittingTeams = (ownedTeams ?? []).filter((team: any) => {
+    const size = team?.members?.length ?? 0;
+    return size >= minSize && size <= maxSize;
+  });
 
   const logo = eventLogo(data);
   const sectionTitle = "eyebrow mb-3 text-ink-2";
@@ -622,41 +608,55 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
         </dl>
 
         {/* Register Button + Dialog */}
-        {user && isRegistered && (
+        {user?.role !== "ALUMNI" && (
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
+            {isRegistered ? (
               <Button
-                className="w-full sm:w-auto sm:self-start"
-                disabled={isRegistered}
-                onClick={(e) => {
-                  if (!user) {
-                    e.preventDefault();
-                    navigate(ERouterPaths.SIGNIN);
-                    return;
-                  }
-                  if (!getIsProfileCompleted()) {
-                    e.preventDefault();
-                    toast({
-                      title: "Complete your profile",
-                      description:
-                        "Please complete your profile to register for events.",
-                    });
-                    navigate(ERouterPaths.PROFILE);
-                    return;
-                  }
-                  const ownedTeams = getOwnedTeams() || [];
-                  if (ownedTeams.length === 0) {
-                    e.preventDefault();
-                    navigate(ERouterPaths.TEAMS);
-                    return;
-                  }
-                }}
+                variant="secondary"
+                className="w-full disabled:opacity-100 sm:w-auto sm:self-start"
+                disabled
               >
-                {isRegistered
-                  ? "Registered"
-                  : "Register"}
+                ✓ Registered
               </Button>
-            </DialogTrigger>
+            ) : data?.canRegister === false ? (
+              <Button className="w-full sm:w-auto sm:self-start" disabled>
+                Registration closed
+              </Button>
+            ) : (
+              <DialogTrigger asChild>
+                <Button
+                  className="w-full sm:w-auto sm:self-start"
+                  onClick={(e) => {
+                    if (!signedIn) {
+                      e.preventDefault();
+                      navigate(ERouterPaths.SIGNIN);
+                      return;
+                    }
+                    if (!getIsProfileCompleted()) {
+                      e.preventDefault();
+                      toast({
+                        title: "Complete your profile",
+                        description:
+                          "Please complete your profile to register for events.",
+                      });
+                      navigate(ERouterPaths.PROFILE);
+                      return;
+                    }
+                    if (fittingTeams.length === 0) {
+                      e.preventDefault();
+                      toast({
+                        title: "No team fits this event",
+                        description: `You need to own a team of ${sizeLabel} members to register.`,
+                      });
+                      navigate(ERouterPaths.TEAMS);
+                      return;
+                    }
+                  }}
+                >
+                  Register ▸
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Select Team</DialogTitle>
@@ -670,16 +670,22 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                       <SelectValue placeholder="Select Team" />
                     </SelectTrigger>
                     <SelectContent>
-                      {getOwnedTeams()?.map((elt: any) => (
-                        <SelectItem key={elt?.id} value={elt?.id}>
-                          {elt?.name}
-                        </SelectItem>
-                      ))}
+                      {(ownedTeams ?? []).map((elt: any) => {
+                        const size = elt?.members?.length ?? 0;
+                        const fits = fittingTeams.includes(elt);
+                        return (
+                          <SelectItem key={elt?.id} value={elt?.id} disabled={!fits}>
+                            {elt?.name} · {size} {size === 1 ? "member" : "members"}
+                            {fits ? "" : " (doesn't fit)"}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                   <Button
                     type="submit"
                     className="shrink-0"
+                    disabled={registerTeamMutation.isPending}
                     onClick={(e) => {
                       e.preventDefault();
                       registerTeamMutation.mutateAsync();
@@ -759,7 +765,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
           <div
             role="group"
             aria-label="Rounds"
-            className="flex flex-wrap gap-x-1 border-b-[3px] border-ink"
+            className="scrollbar-hide -mx-1 flex gap-x-1 overflow-x-auto border-b-[3px] border-ink px-1"
           >
             {data?.roundDetails?.rounds?.map((round: any, idx: number) => {
               const isActive = showRound?.name === round?.name;
@@ -768,7 +774,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                   type="button"
                   key={idx}
                   aria-pressed={isActive}
-                  className={`-mb-[3px] min-h-11 border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-4 sm:text-sm ${
+                  className={`-mb-[3px] min-h-11 shrink-0 whitespace-nowrap border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-4 sm:text-sm ${
                     isActive
                       ? "border-ink border-b-card bg-card text-ink"
                       : "border-transparent border-b-ink text-ink-2 hover:text-ink"

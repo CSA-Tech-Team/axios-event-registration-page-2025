@@ -51,14 +51,14 @@ const InvitationCard: FC<InvitationCardProps> = ({ data }) => {
       </div>
 
       {/* Right side - Action Buttons */}
-      <div className="flex w-full gap-4 md:w-auto md:justify-end">
-        <Button className="flex-1 md:flex-none" onClick={() => handleSubmit(true)}>
+      <div className="flex w-full flex-wrap gap-4 md:w-auto md:flex-nowrap md:justify-end">
+        <Button className="min-w-[7.5rem] flex-1 md:flex-none" onClick={() => handleSubmit(true)}>
           <Check className="h-4 w-4" aria-hidden="true" />
           Accept
         </Button>
         <Button
           variant="secondary"
-          className="flex-1 md:flex-none"
+          className="min-w-[7.5rem] flex-1 md:flex-none"
           onClick={() => handleSubmit(false)}
         >
           <X className="h-4 w-4" aria-hidden="true" />

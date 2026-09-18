@@ -125,8 +125,9 @@
     margin: 0;
     font-family: var(--font-section);
     font-weight: 800;
-    font-size: clamp(40px, 7vw, 88px);
+    font-size: clamp(32px, 9vw, 88px);
     line-height: 0.85;
+    overflow-wrap: break-word;
     letter-spacing: -0.03em;
     text-transform: uppercase;
   }

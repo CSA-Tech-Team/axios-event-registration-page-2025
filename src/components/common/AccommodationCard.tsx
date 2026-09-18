@@ -123,13 +123,13 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
       <p className="eyebrow pt-2 text-ink-2">For further details, contact</p>
       <p>
         <span className="font-bold text-ink">Santhosh Kumar</span> · Coordinator ·
-        <WhatsAppLink phone="+919345890184" className="ml-1 font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
+        <WhatsAppLink phone="+919345890184" className="ml-1 whitespace-nowrap font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
           +91 93458 90184
         </WhatsAppLink>
       </p>
       <p>
         <span className="font-bold text-ink">Ragul Prasath V</span> · Coordinator ·
-        <WhatsAppLink phone="+919345690254" className="ml-1 font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
+        <WhatsAppLink phone="+919345690254" className="ml-1 whitespace-nowrap font-mono font-bold text-ink underline decoration-acc decoration-2 underline-offset-4" message="Hello, I have a query regarding my accommodation.">
           +91 9345690254
         </WhatsAppLink>
       </p>
@@ -154,7 +154,7 @@ const AccommodationCard: FC<AccommodationCardProps> = () => {
         Apply for accommodation to ensure a comfortable stay during the event.
         Please read the terms & conditions carefully before proceeding.
       </p>
-      <Button onClick={() => setShowTAndC(true)}>
+      <Button className="w-full whitespace-normal sm:w-auto" onClick={() => setShowTAndC(true)}>
         Request accommodation ▸
       </Button>
       <div className="border-t-2 border-dashed border-line pt-5">{coordinators}</div>

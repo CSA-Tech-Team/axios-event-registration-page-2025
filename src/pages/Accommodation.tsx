@@ -29,7 +29,7 @@ function Accommodation() {
         )}
         <div>
           <p className="eyebrow text-ink-2">Axios · Stay</p>
-          <h1 className="display-title registration mt-2">Accommodation</h1>
+          <h1 className="display-title registration mt-2 text-[clamp(24px,7.4vw,88px)]">Accommodation</h1>
         </div>
       </header>
       <div className="mt-10 flex w-full flex-col items-start gap-4">

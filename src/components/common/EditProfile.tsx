@@ -779,7 +779,7 @@ const updateUserMutation = useMutation({
                           type="button"
                           aria-label="Copy referral code"
                           title="Copy referral code"
-                          className="-mr-1 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-ink bg-card shadow-brut-sm transition-transform duration-150 hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
+                          className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-ink bg-card shadow-brut-sm transition-transform duration-150 hover:-translate-x-px hover:-translate-y-px active:translate-x-px active:translate-y-px"
                           onClick={() => copyReferral()}
                         >
                           <Copy className="h-4 w-4" aria-hidden="true" />

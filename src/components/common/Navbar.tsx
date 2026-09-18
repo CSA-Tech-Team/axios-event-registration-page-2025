@@ -39,12 +39,14 @@ import { cn } from "@/lib/utils";
 /**
  * Sticky 52px terminal header (brutalist standard §5.1 / §10.8).
  * Active items get amber text plus a heavy underline, so state is never
- * carried by colour alone. Labels collapse to icons below `md` but stay
- * available to assistive tech.
+ * carried by colour alone. Labels collapse to icons below `lg` (they do not
+ * fit beside the wordmark before that) but stay available to assistive tech.
+ * Below `sm` the wordmark doubles as the Home link, so five 44px targets plus
+ * the mark still fit a 320px screen.
  */
 const itemClass = (active: boolean) =>
   cn(
-    "relative flex h-11 min-w-11 items-center justify-center gap-2 px-2 text-sm font-bold uppercase tracking-[0.08em] transition-colors duration-150 md:px-3",
+    "relative flex h-11 min-w-11 items-center justify-center gap-2 px-2 text-sm font-bold uppercase tracking-[0.08em] transition-colors duration-150 lg:px-3",
     "after:absolute after:inset-x-2 after:bottom-0 after:h-[3px] after:bg-term-fg after:transition-transform after:duration-150",
     active
       ? "text-term-fg after:scale-x-100"
@@ -52,7 +54,7 @@ const itemClass = (active: boolean) =>
   );
 
 const NavLabel = ({ children }: { children: React.ReactNode }) => (
-  <span className="sr-only md:not-sr-only">{children}</span>
+  <span className="sr-only lg:not-sr-only">{children}</span>
 );
 
 const NavBar: React.FC = () => {
@@ -125,13 +127,15 @@ const NavBar: React.FC = () => {
       >
         <Link
           to={ERouterPaths.HOME}
+          aria-label="Axios home"
+          aria-current={pathname === ERouterPaths.HOME ? "page" : undefined}
           className="flex h-11 shrink-0 items-center"
         >
           <BrandMark />
         </Link>
 
-        <ul className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
-          <li>
+        <ul className="flex items-center gap-0.5 sm:gap-1 lg:gap-2">
+          <li className="hidden sm:block">
             <Link
               to={ERouterPaths.HOME}
               className={itemClass(pathname === ERouterPaths.HOME)}
@@ -194,7 +198,7 @@ const NavBar: React.FC = () => {
                   <UserRound className="h-5 w-5" aria-hidden="true" />
                   <NavLabel>Profile</NavLabel>
                   <ChevronDown
-                    className="hidden h-4 w-4 md:block"
+                    className="hidden h-4 w-4 lg:block"
                     aria-hidden="true"
                   />
                 </DropdownMenuTrigger>

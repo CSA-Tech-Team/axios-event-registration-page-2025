@@ -134,10 +134,10 @@ export const Leaderboard = () => {
 
       {entries.length > 0 && (
         <div className="mt-10 flex w-full flex-col gap-10 lg:flex-row lg:items-end">
-          <section aria-label="Top three" className="w-full lg:w-2/3">
+          <section aria-label="Top three" className="w-full lg:min-w-0 lg:flex-[2]">
             <div className="mx-auto flex h-[40vh] min-h-[300px] max-w-2xl items-end gap-3">
               {podium.map((entry, slot) => {
-                if (!entry) return <div key={slot} className="w-1/3" />;
+                if (!entry) return <div key={slot} className="min-w-0 flex-1" />;
                 const style = podiumStyle(entry.rank);
 
                 return (
@@ -145,7 +145,7 @@ export const Leaderboard = () => {
                     key={entry.id}
                     // min-h-fit keeps the short third-place block from spilling
                     // its name and score out below the card.
-                    className={`${style.height} ${style.background} flex min-h-fit w-1/3 flex-col items-center justify-start border-2 border-ink px-2 pb-4 text-ink shadow-brut-md`}
+                    className={`${style.height} ${style.background} flex min-h-fit min-w-0 flex-1 flex-col items-center justify-start border-2 border-ink px-2 pb-4 text-ink shadow-brut-md`}
                   >
                     <div className="-mt-7">
                       <span
@@ -157,13 +157,13 @@ export const Leaderboard = () => {
                       </span>
                     </div>
                     <div className="mt-3 w-full text-center">
-                      <div className="truncate px-2 text-sm font-bold md:text-base">
+                      <div lang="en" className="line-clamp-3 hyphens-auto break-words px-1 text-[11px] font-bold leading-tight sm:px-2 sm:text-sm md:text-base">
                         {entryLabel(entry)}
                       </div>
                       <div className="mt-1 font-display text-3xl leading-none md:text-5xl">
                         {entry.totalScore}
                       </div>
-                      <div className="mt-2 truncate px-2 font-mono text-xs uppercase">
+                      <div className="mt-2 break-words px-1 font-mono text-[11px] uppercase leading-tight sm:px-2 sm:text-xs">
                         {entrySubLabel(entry, board)}
                       </div>
                     </div>
@@ -173,7 +173,7 @@ export const Leaderboard = () => {
             </div>
           </section>
 
-          <section aria-label="Rankings" className="brut-card w-full p-4 lg:w-1/3">
+          <section aria-label="Rankings" className="brut-card w-full p-4 lg:min-w-0 lg:flex-1">
             {rest.length === 0 ? (
               <p className="py-8 text-center text-sm text-ink-2">
                 Only the top spots are filled so far.
