@@ -1,10 +1,16 @@
-import React, { useEffect, useState, useRef } from "react";
-import profileIcon from "@/assets/profile.svg";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
-  House,
+  BedDouble,
   CalendarFold,
+  ChevronDown,
+  House,
+  LogIn,
   LogOut,
-  SquareArrowOutUpRightIcon,
+  Mails,
+  Trophy,
+  UserRound,
+  Users,
 } from "lucide-react";
 import {
   Dialog,
@@ -14,169 +20,81 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-
-import { Mails } from "lucide-react";
-import { motion, AnimatePresence, easeOut } from "framer-motion";
-import LeaderBoardIcon from "@/assets/leaderboard.svg";
-import { useLocation, useNavigate } from "react-router-dom";
+import BrandMark from "./BrandMark";
 import { ERouterPaths } from "@/constants/enum";
-import team from "@/assets/teams.svg";
-import accomodation from "@/assets/accomodation.svg";
-import useWindowDimensions from "@/hooks/useWindowDimension";
 import { useAuthStore } from "@/store/ApiStates";
 import { useIsSignedIn } from "@/hooks/useIsSignedIn";
 import { signOut } from "@/lib/auth-client";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+
+/**
+ * Sticky 52px terminal header (brutalist standard §5.1 / §10.8).
+ * Active items get amber text plus a heavy underline, so state is never
+ * carried by colour alone. Labels collapse to icons below `md` but stay
+ * available to assistive tech.
+ */
+const itemClass = (active: boolean) =>
+  cn(
+    "relative flex h-11 min-w-11 items-center justify-center gap-2 px-2 text-sm font-bold uppercase tracking-[0.08em] transition-colors duration-150 md:px-3",
+    "after:absolute after:inset-x-2 after:bottom-0 after:h-[3px] after:bg-term-fg after:transition-transform after:duration-150",
+    active
+      ? "text-term-fg after:scale-x-100"
+      : "text-paper after:scale-x-0 hover:text-term-fg focus-visible:text-term-fg",
+  );
+
+const NavLabel = ({ children }: { children: React.ReactNode }) => (
+  <span className="sr-only md:not-sr-only">{children}</span>
+);
 
 const NavBar: React.FC = () => {
-  const location = useLocation();
-  const windowSize = useWindowDimensions();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const [activeIndex, setActiveIndex] = useState<number>();
-  const [showNavbar2, setShowNavbar2] = useState(false);
-  const [profileIndex, setProfileIndex] = useState<number>(0);
-  const [animateX, setAnimateX] = useState(0);
-  const { getIsProfileCompleted } = useAuthStore();
+  const { getIsProfileCompleted, clearTokens } = useAuthStore();
   const { user } = useAuthStore.getState();
-  const [open, setOpen] = useState(false); // for logout dialog
-  const navRef = useRef<HTMLDivElement | null>(null);
-
-  //
-  useEffect(() => {
-    const loc = location.pathname;
-    if (loc == ERouterPaths.INVITATION) {
-      setShowNavbar2(false);
-      setProfileIndex(1);
-    } else if (loc == ERouterPaths.TEAMS) {
-      setShowNavbar2(false);
-      setProfileIndex(2);
-      setActiveIndex(2);
-    } else if (loc == ERouterPaths.ACCOMODATION) {
-      setShowNavbar2(false);
-      setProfileIndex(3);
-      setActiveIndex(2);
-    } else if (loc == ERouterPaths.EVENTS) {
-      setProfileIndex(0);
-      setShowNavbar2(false);
-      setActiveIndex(1);
-    } else if (loc == ERouterPaths.HOME) {
-      setShowNavbar2(false);
-      setProfileIndex(0);
-      setActiveIndex(0);
-    } else if (loc.startsWith(ERouterPaths.PROFILE)) {
-      setShowNavbar2(true);
-      setActiveIndex(2);
-    } else if (loc == ERouterPaths.LEADERBOARD) {
-      setProfileIndex(0);
-      setShowNavbar2(false);
-      setActiveIndex(3);
-    }
-  }, [location.pathname]);
-
-  // close secondary navbar when clicking outside or scrolling
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setShowNavbar2(false);
-      }
-    };
-
-    const handleScroll = () => {
-      setShowNavbar2(false);
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-
-  // Navbar 2
-  const handleProfile = (num: number) => {
-    if (num == 1) {
-      setShowNavbar2(false);
-      // navigate(
-      //   getIsProfileCompleted() ? ERouterPaths.INVITATION : ERouterPaths.PROFILE
-      // );
-      if (getIsProfileCompleted()) {
-        navigate(ERouterPaths.INVITATION);
-      } else {
-        toast ({
-          title: "Complete your profile",
-          description: "Please complete your profile to access invitations.",
-        });
-        navigate(ERouterPaths.PROFILE);
-      }
-    } else if (num == 2) {
-      setShowNavbar2(false);
-      // navigate(
-      //   getIsProfileCompleted() ? ERouterPaths.TEAMS : ERouterPaths.PROFILE
-      // );
-      if (getIsProfileCompleted()) {
-        navigate(ERouterPaths.TEAMS);
-      } else {
-        toast ({
-          title: "Complete your profile",
-          description: "Please complete your profile to access teams.",
-        });
-        navigate(ERouterPaths.PROFILE);
-      }
-    } else if (num == 3) {
-      setShowNavbar2(false);
-      if (getIsProfileCompleted()) {
-        navigate(ERouterPaths.ACCOMODATION);
-      }
-      else {
-        toast ({
-          title: "Complete your profile",
-          description: "Please complete your profile to access accomodation.",
-        });
-        navigate(ERouterPaths.PROFILE);
-      }
-    } else {
-      setShowNavbar2(false);
-      navigate(ERouterPaths.PROFILE);
-    }
-  };
-
-  useEffect(() => {
-    if (windowSize.width < 1024) {
-      setAnimateX(-70);
-    } else {
-      setAnimateX(-25);
-    }
-  }, []);
-
-  //Navbar 1
-  const handleClick = (index: number): void => {
-    // const loc = window.location.pathname;
-    if (index == 1) {
-      navigate(ERouterPaths.EVENTS);
-    } else if (index == 0) {
-      navigate(ERouterPaths.HOME);
-    } else if (index == 2) {
-      navigate(ERouterPaths.PROFILE);
-    } else if (index == 3) {
-      navigate(ERouterPaths.LEADERBOARD);
-    } else if (index == 4) {
-      navigate(ERouterPaths.SIGNIN);
-    }
-    setActiveIndex(index);
-  };
-
-  const { clearTokens } = useAuthStore();
   const signedIn = useIsSignedIn();
+  const [open, setOpen] = useState(false); // logout dialog
+  const isAlumni = user?.role === "ALUMNI";
+
+  const isEvents =
+    pathname.startsWith(ERouterPaths.EVENTS) ||
+    pathname === ERouterPaths.EVENTSCHEDULE;
+  const isAlumniAccommodation =
+    isAlumni && pathname === ERouterPaths.ACCOMODATION;
+  const isProfile =
+    pathname.startsWith(ERouterPaths.PROFILE) && !isAlumniAccommodation;
+
+  // Invitations, teams and accommodation all need a completed profile first.
+  const goGated = (path: ERouterPaths, what: string) => {
+    if (getIsProfileCompleted()) {
+      navigate(path);
+    } else {
+      toast({
+        title: "Complete your profile",
+        description: `Please complete your profile to access ${what}.`,
+      });
+      navigate(ERouterPaths.PROFILE);
+    }
+  };
+
+  const goAlumniAccommodation = () => {
+    if (user?.isProfileCompleted) {
+      navigate(ERouterPaths.ACCOMODATION);
+    } else {
+      toast({
+        title: "Profile Incomplete",
+        description: "Complete your profile before accessing accommodation.",
+      });
+    }
+  };
 
   /**
    * Ends the session on the API first. Clearing local storage alone left the
@@ -194,266 +112,162 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <div ref={navRef} className="relative flex justify-center  h-fit w-screen p-0 ">
-      <div className="relative flex justify-center h-fit w-screen p-0">
-        <div
-          className="bg-[linear-gradient(to_right,#80466E,#2D1F44)] bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left
-             mx-5 rounded-xl flex justify-between items-center px-6 py-2 
-             lg:w-1/2 sm:w-9/12 shadow-lg text-white relative 
-             transition-all duration-700 ease-in-out"
+    <header className="brut-inverse sticky top-0 z-40 h-header border-b-2 border-ink">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:bg-acc-2 focus:px-3 focus:py-2 focus:font-bold focus:text-ink"
+      >
+        Skip to content
+      </a>
+      <nav
+        aria-label="Primary"
+        className="brut-container flex h-full items-center justify-between gap-2"
+      >
+        <Link
+          to={ERouterPaths.HOME}
+          className="flex h-11 shrink-0 items-center"
         >
-          {/* Left side */}
-          <div className="flex gap-4">
-            {/* Home */}
-            <div
-              className={`flex items-center gap-2 px-4 py-2 cursor-pointer transition-all
-                ${activeIndex === 0 
-                  ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
-                  : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
-              onClick={() => handleClick(0)}
+          <BrandMark />
+        </Link>
+
+        <ul className="flex items-center gap-0.5 sm:gap-1 md:gap-2">
+          <li>
+            <Link
+              to={ERouterPaths.HOME}
+              className={itemClass(pathname === ERouterPaths.HOME)}
+              aria-current={pathname === ERouterPaths.HOME ? "page" : undefined}
             >
-              <House style={{ width: "20px", height: "20px" }} />
-              <span className="hidden sm:hidden md:block text-sm font-medium">Home</span>
-            </div>
-
-            {/* Events */}
-            <div
-              className={`flex items-center gap-2 px-4 py-2 cursor-pointer transition-all
-                ${activeIndex === 1 
-                  ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
-                  : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
-              onClick={() => handleClick(1)}
+              <House className="h-5 w-5" aria-hidden="true" />
+              <NavLabel>Home</NavLabel>
+            </Link>
+          </li>
+          <li>
+            <Link
+              to={ERouterPaths.EVENTS}
+              className={itemClass(isEvents)}
+              aria-current={isEvents ? "page" : undefined}
             >
-              <CalendarFold style={{ width: "20px", height: "20px" }} />
-              <span className="hidden sm:hidden md:block text-sm font-medium">Events</span>
-            </div>
-          </div>
-
-          {/* Spacer for center profile */}
-          <div className="w-16"></div>
-
-          {/* Right side */}
-          <div className="flex gap-4">
-            {/* Leaderboard */}
-            <div
-              className={`flex items-center gap-2 px-4 py-2 cursor-pointer transition-all
-                ${activeIndex === 3 
-                  ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
-                  : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
-              onClick={() => {
-                if (user?.role !== "ALUMNI") {
-                  handleClick(3);
-                } else {
-                  if (user?.isProfileCompleted) {
-                    navigate(ERouterPaths.ACCOMODATION);
-                  } else {
-                    toast({
-                      title: "Profile Incomplete",
-                      description: "Complete your profile before accessing accommodation.",
-                    });
-                  }
+              <CalendarFold className="h-5 w-5" aria-hidden="true" />
+              <NavLabel>Events</NavLabel>
+            </Link>
+          </li>
+          <li>
+            {isAlumni ? (
+              <button
+                type="button"
+                onClick={goAlumniAccommodation}
+                className={itemClass(isAlumniAccommodation)}
+                aria-current={isAlumniAccommodation ? "page" : undefined}
+              >
+                <BedDouble className="h-5 w-5" aria-hidden="true" />
+                <NavLabel>Accommodation</NavLabel>
+              </button>
+            ) : (
+              <Link
+                to={ERouterPaths.LEADERBOARD}
+                className={itemClass(pathname === ERouterPaths.LEADERBOARD)}
+                aria-current={
+                  pathname === ERouterPaths.LEADERBOARD ? "page" : undefined
                 }
-              }}
-            > 
-              {/*<img
-                src={LeaderBoardIcon}
-                alt="Leaderboard"
-                className={`min-[400px]:w-[20px] min-[400px]:h-[20px] flex-shrink-0
-                  ${activeIndex === 3 ? "invert" : "invert-0"}`}/>
-              <span className="hidden sm:hidden md:block text-sm font-medium">Leaderboard</span>*/}
-                  {user?.role === "ALUMNI" ? (
-                    <>
-                      <img
-                        src={accomodation}
-                        alt="Accomodation"
-                        className={`min-[400px]:w-[20px] min-[400px]:h-[20px] flex-shrink-0
-                          ${activeIndex === 3 ? "invert" : "invert-0"}`}
-                      />
-                      <span className="hidden sm:hidden md:block text-sm font-medium">
-                        Accomodation
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <img
-                        src={LeaderBoardIcon}
-                        alt="Leaderboard"
-                        className={`min-[400px]:w-[20px] min-[400px]:h-[20px] flex-shrink-0
-                          ${activeIndex === 3 ? "invert" : "invert-0"}`}
-                      />
-                      <span className="hidden sm:hidden md:block text-sm font-medium">
-                        Leaderboard
-                      </span>
-                    </>
-                  )}
-            </div>
-
-            {/* Login/Logout */}
-            <div
-              className={`flex items-center gap-2 px-4 py-2 cursor-pointer transition-all
-                ${activeIndex === 4
-                  ? "bg-gradient-to-r from-[#FF6F61] to-[#FFD166] text-[#1A1A1A] font-semibold rounded-xl shadow-lg"
-                  : "text-white hover:bg-[#80466E]/60 rounded-xl"}`}
-              onClick={() => {
-                if (signedIn) {
-                  setOpen(true); // open confirm dialog
-                } else {
-                  navigate(ERouterPaths.SIGNIN);
-                }
-              }}
-            >
-              {signedIn ? (
-                <LogOut style={{ width: "20px", height: "20px" }} />
-              ) : (
-                <SquareArrowOutUpRightIcon style={{ width: "20px", height: "20px" }} />
-              )}
-              <span className="hidden sm:hidden md:block text-sm font-medium">
-                {signedIn ? "Logout" : "Signin"}
-              </span>
-            </div>
-
-            {/* Confirm Logout Dialog */}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent className="bg-[#121212] shadow-lg text-white">
-                <DialogHeader>
-                  <DialogTitle>Confirm Logout</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to logout? You’ll need to sign in again to access your account.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="flex gap-4 justify-end mt-4">
-                  <Button
-                    variant="ghost"
-                    className="bg-gray-600 text-white"
-                    onClick={() => setOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-red-600 text-white"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="absolute lg:left-[47%] md:left-[46%] sm:left-[49%] max-[640px]:left-[50%] 
-            transform -translate-x-1/2 -top-5 
-            bg-gradient-to-r from-orange-400 via-red-500 to-pink-600 
-            rounded-full p-2 sm:p-2.5 text-white z-10 cursor-pointer shadow-xl">
-            
-            <div
-              className="rounded-full bg-[#80466E] p-3 sm:p-4 hover:bg-[#6A375A] transition-all"
-              onClick={() => {
-                handleClick(2);
-                setProfileIndex(0);
-                setShowNavbar2(!showNavbar2);
-              }}
-            >
-              {profileIndex == 0 ? (
-                <img src={profileIcon} alt="" style={{ width: "24px", height: "24px" }} />
-              ) : profileIndex == 1 ? (
-                <Mails className="w-6 h-6" />
-              ) : profileIndex == 2 ? (
-                <img src={team} alt="" style={{ width: "24px", height: "24px" }} />
-              ) : (
-                <img src={accomodation} alt="" style={{ width: "24px", height: "24px" }} />
-              )}
-            </div>
-          </div>
-        </div>        
-      </div>
-      
-      {user?.role !== "ALUMNI" && (
-      <AnimatePresence>
-        {showNavbar2 && (
-          <div>
-              <>
-                <motion.div
-                  onClick={() => handleProfile(profileIndex == 1 ? 0 : 1)}
-                  key="invitations"
-                  animate={{ x: animateX, y: 0 }}
-                  initial={{ x: 45, y: 50 }}
-                  exit={{ x: 45, y: 50 }}
-                  transition={{ ease: easeOut, duration: 0.25 }}
-                  className="absolute text-white flex items-center justify-center left-[calc(50%-35px)]  lg:left-[calc(45%-15px)] transform -translate-x-1/2 -top-14 w-12 p-4 bg-[#171717] outline outline-white outline-1 rounded-full hover:cursor-pointer"
+              >
+                <Trophy className="h-5 w-5" aria-hidden="true" />
+                <NavLabel>Leaderboard</NavLabel>
+              </Link>
+            )}
+          </li>
+          <li>
+            {isAlumni ? (
+              <Link
+                to={ERouterPaths.PROFILE}
+                className={itemClass(isProfile)}
+                aria-current={isProfile ? "page" : undefined}
+              >
+                <UserRound className="h-5 w-5" aria-hidden="true" />
+                <NavLabel>Profile</NavLabel>
+              </Link>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={itemClass(isProfile)}
+                  aria-current={isProfile ? "page" : undefined}
                 >
-                  {profileIndex == 1 ? (
-                    <img src={profileIcon} alt="" className="w-5 h-5" />
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip open={true}>
-                        <TooltipTrigger>
-                          <Mails className="w-5 h-5" />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-[#2D1F44]">
-                          <p className="text-[0.7rem]">Invites</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </motion.div>
-                <motion.div
-                  onClick={() => handleProfile(profileIndex == 2 ? 0 : 2)}
-                  key="teams"
-                  animate={{ x: animateX, y: 0 }}
-                  initial={{ x: -25, y: 100 }}
-                  exit={{ x: -25, y: 100 }}
-                  transition={{ ease: easeOut, duration: 0.25 }}
-                  className="absolute flex  left-[calc(50%+45px)]  lg:left-[calc(50%)]  -top-20 w-12 p-4 bg-[#171717] outline outline-white outline-1 rounded-full hover:cursor-pointer"
-                >
-                  {profileIndex == 2 ? (
-                    <img src={profileIcon} alt="" className="w-5 h-5" />
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip open={true}>
-                        <TooltipTrigger>
-                          <img src={team} alt="" className="w-5" />
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-[#2D1F44]">
-                          <p className="text-[0.6rem]">Teams</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </motion.div>
-              </>
-            <motion.div
-              onClick={() => handleProfile(profileIndex == 3 ? 0 : 3)}
-              key="accomodation"
-              animate={{ x: animateX, y: 0 }}
-              initial={{ x: -90, y: 50 }}
-              exit={{ x: -90, y: 50 }}
-              transition={{ ease: easeOut, duration: 0.25 }}
-              className="absolute flex left-[calc(50%+120px)] lg:left-[calc(55%+15px)] transform -translate-x-1/2 -top-14 w-12 p-4  bg-[#171717] outline outline-white outline-1 rounded-full hover:cursor-pointer"
-            >
-              {profileIndex == 3 ? (
-                <img src={profileIcon} alt="" className="w-5 h-5" />
-              ) : (
-                <TooltipProvider>
-                  <Tooltip open={true}>
-                    <TooltipTrigger>
-                      <img src={accomodation} alt="" className="w-5" />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-[#2D1F44]">
-                      <p className="text-[0.7rem]">Accomodation</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-      )}
-    </div>
+                  <UserRound className="h-5 w-5" aria-hidden="true" />
+                  <NavLabel>Profile</NavLabel>
+                  <ChevronDown
+                    className="hidden h-4 w-4 md:block"
+                    aria-hidden="true"
+                  />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" sideOffset={8} className="w-56">
+                  <DropdownMenuItem onSelect={() => navigate(ERouterPaths.PROFILE)}>
+                    <UserRound className="h-4 w-4" aria-hidden="true" />
+                    My profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={() => goGated(ERouterPaths.INVITATION, "invitations")}
+                  >
+                    <Mails className="h-4 w-4" aria-hidden="true" />
+                    Invitations
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() => goGated(ERouterPaths.TEAMS, "teams")}
+                  >
+                    <Users className="h-4 w-4" aria-hidden="true" />
+                    Teams
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      goGated(ERouterPaths.ACCOMODATION, "accomodation")
+                    }
+                  >
+                    <BedDouble className="h-4 w-4" aria-hidden="true" />
+                    Accommodation
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </li>
+          <li>
+            {signedIn ? (
+              <button
+                type="button"
+                onClick={() => setOpen(true)}
+                className={itemClass(false)}
+              >
+                <LogOut className="h-5 w-5" aria-hidden="true" />
+                <NavLabel>Logout</NavLabel>
+              </button>
+            ) : (
+              <Link to={ERouterPaths.SIGNIN} className={itemClass(false)}>
+                <LogIn className="h-5 w-5" aria-hidden="true" />
+                <NavLabel>Sign in</NavLabel>
+              </Link>
+            )}
+          </li>
+        </ul>
+      </nav>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Log out?</DialogTitle>
+            <DialogDescription>
+              You’ll need to sign in again to access your account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2">
+            <Button variant="secondary" onClick={() => setOpen(false)}>
+              Stay signed in
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Log out
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </header>
   );
 };
 
 export default NavBar;
-
-
-

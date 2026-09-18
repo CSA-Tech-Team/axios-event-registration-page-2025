@@ -6,6 +6,7 @@ import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { EventDescription } from "@/components/common/EventDescription";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 export const EventDetailsPage = () => {
   const { id } = useParams();
@@ -21,28 +22,38 @@ export const EventDetailsPage = () => {
   });
 
   if (isLoading) {
-    return <div className="text-white p-6">Loading event...</div>;
+    return (
+      <div className="brut-container py-16 font-mono text-sm uppercase tracking-[0.08em] text-ink">
+        <span aria-hidden="true" className="mr-2 inline-block h-3 w-2 animate-brut-blink bg-ink align-middle" />
+        Loading event...
+      </div>
+    );
   }
 
   if (isError || !data) {
-    return <div className="text-red-500 p-6">Event not found</div>;
+    return (
+      <div className="brut-container py-16">
+        <p role="alert" className="max-w-xl border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-4 py-3 font-semibold text-ink">
+          Event not found
+        </p>
+      </div>
+    );
   }
 
   return (
-    <main className="h-full w-full flex flex-col text-white">
-      {/* Back button */}
-      <div className="flex items-center gap-3 p-6 bg-[#171717]">
-        <ArrowLeft
-          className="cursor-pointer hover:text-Violet"
-          onClick={() => navigate(ERouterPaths.EVENTS)}
-        />
-        <span className="text-xl">Back to Events</span>
-      </div>
+    <div className="brut-container pb-20 pt-8 md:pt-10">
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => navigate(ERouterPaths.EVENTS)}
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Back to Events
+      </Button>
 
-      {/* Fullscreen Event Description */}
-      <div className="flex-1 overflow-auto w-full p-6 scrollbar">
+      <div className="mt-8">
         <EventDescription data={data} />
       </div>
-    </main>
+    </div>
   );
 };

@@ -15,6 +15,7 @@ import {
   DialogHeader,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxios from "@/hooks/useAxios";
 import { toast } from "@/hooks/use-toast";
@@ -56,8 +57,8 @@ const Teams = () => {
       toast({
         title: "Success",
         description: (
-          <pre className="mt-2 w-[340px] rounded-lg bg-white p-4">
-            <code className="text-black">Team {name} created successfully and register any event with this team.</code>
+          <pre className="mt-2 max-w-[340px] whitespace-pre-wrap border-2 border-ink bg-wcard p-3 font-mono text-xs">
+            <code className="text-ink">Team {name} created successfully and register any event with this team.</code>
           </pre>
         ),
       });
@@ -71,112 +72,111 @@ const Teams = () => {
   });
  
   return (
-    <div className="flex flex-wrap justify-between h-full w-full">
-      <div className="w-full h-full lg:block">
-        <div className="w-full h-full overflow-hidden text-white lg:pt-12 pt-4">
-          <div className=" h-1/6 lg:pt-16 lg:px-12 px-6 w-full  z-10 text-3xl justify-between  flex items-center gap-4">
-            <div className="flex w-full e items-center gap-4 ">
-              <div className="text-white " onClick={() => reset()}>
-                <ArrowLeft />
-              </div>
+    <div className="brut-container pb-20 pt-10 md:pt-14">
+      <header className="flex flex-col items-start justify-between gap-6 border-b-2 border-ink pb-6 sm:flex-row sm:items-end">
+        <div className="flex items-end gap-4">
+          <button
+            type="button"
+            aria-label="Back"
+            onClick={() => reset()}
+            className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center border-2 border-ink bg-wcard text-ink shadow-brut-sm transition-transform duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <p className="eyebrow text-ink-2">Profile · Teams</p>
+            <h1 className="display-title registration mt-2">
               {showTeamDetails ? "Teams Details" : "Team"}
-            </div>
-            {!showTeamDetails && user!=null && user?.role!='ALUMNI' ? (
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
-                  <button
-                    className="flex justify-center bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5  rounded-full font-medium shadow-lg transition-all duration-700 ease-in-out"
-                  >
-                    <span className="relative z-10 p-0 text-xl">Create</span>
-
-                    {/* Subtle animated glow */}
-                    
-                  </button>
-                </DialogTrigger>
-
-                <DialogContent className="bg-[#121212] shadow-lg text-white">
-                  <DialogHeader>
-                    <DialogTitle>Enter Team Name</DialogTitle>
-                    <div className="flex lg:flex-row flex-col p-3 t items-center">
-                      <Input
-                        type="text"
-                        className="bg-[#232323]"
-                        required
-                        onChange={(e) => setTeamName(e.target.value)}
-                      />
-                      <div className="p-3">
-                        <Button
-                          className="bg-[#80466E]"
-                          onClick={() => {
-                            teamCreateMutation.mutateAsync();
-                          }}
-                        >
-                          Create
-                        </Button>
-                      </div>
-                    </div>
-                    {/* <DialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your account and remove your data from our servers.
-                    </DialogDescription> */}
-                  </DialogHeader>
-                </DialogContent>
-              </Dialog>
-            ) : (
-              ""
-            )}
+            </h1>
           </div>
-          {showTeamDetails ? (
-            <div className="z-0 h-5/6 lg:mt-0  overflow-auto scrollbar w-full gap-4 lg:p-0 px-6">
-              <TeamDetails
-                data={team as object}
-                reset={() => {
-                  setShowDiscard(true);
-                }}
-              />
-            </div>
-          ) : (
-            <div className="z-0 h-5/6 lg:mt-0 overflow-auto scrollbar w-full">
-              {/* Inside the scroll container: the page is overflow-hidden, so
-                  anything after the grid would be clipped below the fold. */}
-              {user != null && user?.role != 'ALUMNI' && <UnplacedEvents />}
-
-              <div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 items-stretch w-full gap-6 lg:p-12 p-6">
-                {getTeams() && getTeams().length > 0 ? (
-                  getTeams().map((elt) => (
-                    <div
-                      onClick={() => {
-                        setShowTeamDetails(true);
-                        console.log(elt);
-                        setTeam(elt);
-                      }}
-                      className="h-full"
-                      key={elt?.id}
-                    >
-                      <TeamCard data={elt} />
-                    </div>
-                  ))
-                ) : (
-                  <div className="col-span-full flex justify-center items-center text-gray-400 text-lg font-medium">
-                    { user && user?.role!="ALUMNI" ? "No teams have been created.":" Alumni cannot create or join teams."}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-      </div>
-      {showDiscard ? (
-        <div className="">
-          <Discard
-            cancel={() => {
-              setShowDiscard(false);
-            }}
-            discard={() => {
-              reset();
+        {!showTeamDetails && user != null && user?.role != "ALUMNI" ? (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>Create</Button>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Enter Team Name</DialogTitle>
+              </DialogHeader>
+              <form
+                className="flex flex-col gap-4 sm:flex-row sm:items-end"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  teamCreateMutation.mutateAsync();
+                }}
+              >
+                <div className="flex-1">
+                  <Label htmlFor="team-name">Team name</Label>
+                  <Input
+                    id="team-name"
+                    type="text"
+                    className="mt-2"
+                    required
+                    onChange={(e) => setTeamName(e.target.value)}
+                  />
+                </div>
+                <Button type="submit">Create</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        ) : (
+          ""
+        )}
+      </header>
+
+      {showTeamDetails ? (
+        <div className="mt-10">
+          <TeamDetails
+            data={team as object}
+            reset={() => {
+              setShowDiscard(true);
             }}
           />
         </div>
+      ) : (
+        <div className="mt-10">
+          {user != null && user?.role != "ALUMNI" && <UnplacedEvents />}
+
+          <div className="grid w-full grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))] items-stretch gap-8">
+            {getTeams() && getTeams().length > 0 ? (
+              getTeams().map((elt) => (
+                <div
+                  onClick={() => {
+                    setShowTeamDetails(true);
+                    console.log(elt);
+                    setTeam(elt);
+                  }}
+                  className="h-full cursor-pointer"
+                  key={elt?.id}
+                >
+                  <TeamCard data={elt} />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full mx-auto w-full max-w-xl -rotate-[0.5deg] border-2 border-dashed border-ink bg-card px-6 py-8 text-center">
+                <p className="font-note text-2xl text-ink">No teams yet</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-ink-2">
+                  {user && user?.role != "ALUMNI"
+                    ? "No teams have been created."
+                    : " Alumni cannot create or join teams."}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showDiscard ? (
+        <Discard
+          cancel={() => {
+            setShowDiscard(false);
+          }}
+          discard={() => {
+            reset();
+          }}
+        />
       ) : (
         ""
       )}

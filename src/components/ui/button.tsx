@@ -5,26 +5,28 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  // Brutalist button (§10.1–10.2): square, ink border, hard shadow that
+  // lifts on hover/focus and compresses when pressed.
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none font-bold transition-[transform,box-shadow,background-color] duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[3px] focus-visible:outline-ink disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+          "border-[3px] border-ink bg-acc text-white shadow-brut hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:-translate-x-0.5 focus-visible:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-brut-press",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+          "border-[3px] border-ink bg-destructive text-destructive-foreground shadow-brut hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:-translate-x-0.5 focus-visible:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-brut-press",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+          "border-[3px] border-ink bg-wcard text-ink shadow-brut hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:-translate-x-0.5 focus-visible:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-brut-press",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border-[3px] border-ink bg-card text-ink shadow-brut hover:-translate-x-0.5 hover:-translate-y-0.5 focus-visible:-translate-x-0.5 focus-visible:-translate-y-0.5 active:translate-x-1 active:translate-y-1 active:shadow-brut-press",
+        ghost: "text-ink hover:bg-line",
+        link: "text-ink underline decoration-2 decoration-acc underline-offset-4 hover:decoration-ink",
       },
       size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        default: "min-h-11 px-6 py-3 text-base",
+        sm: "min-h-9 border-2 px-3 py-1.5 text-xs uppercase tracking-[0.08em] shadow-brut-sm",
+        lg: "min-h-12 px-7 py-3.5 text-base",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

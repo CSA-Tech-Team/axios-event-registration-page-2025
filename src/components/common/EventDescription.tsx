@@ -368,6 +368,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
               );
             })}
           </div>
+          )}
           {showRound && (
             <div className="mt-4 bg-[#1a1a1a] p-4 rounded-xl shadow border border-gray-700">
               <h3 className="font-semibold text-[#80466E]">
@@ -387,6 +388,7 @@ import { FC, useState, useEffect } from "react";
 import { Timer, Layers, Calendar, Users } from "lucide-react";
 import VioletProfile from "@/assets/violetProfile.svg";
 import { Button } from "../ui/button";
+import { eventLogo } from "@/lib/eventArt";
 import {
   Dialog,
   DialogContent,
@@ -551,56 +553,75 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
   });
 
   if (!data) {
-    return <div className="text-white p-6 text-lg">Event not found</div>;
+    return <div className="p-6 text-lg font-semibold text-ink">Event not found</div>;
   }
 
+  const logo = eventLogo(data);
+  const sectionTitle = "eyebrow mb-3 text-ink-2";
+
   return (
-    <main className="min-h-screen gap-4 w-full bg-[#0f0f0f] text-white grid grid-cols-1 lg:grid-cols-2 p-4">
-      {/* Left Section */}
-      <section className="p-8 max-[500px]:p-4 flex flex-col gap-6 bg-[#171717] rounded-2xl shadow-2xl">
-        {/* Hero */}
-        <div className="flex items-center gap-4">
-          <img
-            src={data?.logo || VioletProfile}
-            alt="Event Logo"
-            className="w-20 h-20 rounded-full border-4 border-[#1a1a1a] shadow-lg"
-          />
-          <h1 className="text-3xl font-bold text-[#80466E]">{data?.title}</h1>
+    <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
+      {/* Left: identity, facts, registration, conveners */}
+      <section className="brut-card flex flex-col gap-6 p-5 sm:p-7">
+        <div className="flex items-start gap-4">
+          <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
+            {logo ? (
+              <img src={logo} alt="" className="h-full w-full object-contain" />
+            ) : (
+              <span aria-hidden="true" className="font-display text-3xl uppercase leading-none">
+                {data?.title?.charAt(0) ?? "✦"}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="eyebrow text-ink-2">Axios · Event brief</p>
+            <h1 className="mt-2 break-words font-display text-[clamp(38px,7vw,72px)] uppercase leading-[0.9]">
+              {data?.title}
+            </h1>
+          </div>
         </div>
 
-        {/* Event Info */}
-        <div className="flex max-[600px]:flex-col gap-3 text-gray-300 text-base">
-          <div className="flex items-center gap-2 border-r pr-4 max-[600px]:border-r-0 max-[600px]:pr-0">
-            <Calendar size={18} className="text-[#80466E]" />
-            <span>{data?.startTime?.slice(0, 10) || "Date TBD"}</span>
+        {/* Fact panels (§10.7) */}
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="border-2 border-ink bg-wcard p-3">
+            <dt className="eyebrow flex items-center gap-1.5 text-ink-2">
+              <Calendar size={14} aria-hidden="true" /> Date
+            </dt>
+            <dd className="mt-1 font-mono text-sm font-bold">
+              {data?.startTime?.slice(0, 10) || "Date TBD"}
+            </dd>
           </div>
-          <div className="flex items-center gap-2 border-r pr-4 max-[600px]:border-r-0 max-[600px]:pr-0">
-            <Layers size={18} className="text-[#80466E]" />
-            <span>
+          <div className="border-2 border-ink bg-wcard p-3">
+            <dt className="eyebrow flex items-center gap-1.5 text-ink-2">
+              <Layers size={14} aria-hidden="true" /> Rounds
+            </dt>
+            <dd className="mt-1 font-mono text-sm font-bold">
               {data?.roundDetails?.rounds?.length
                 ? `${data.roundDetails.rounds.length} Rounds`
                 : "Rounds TBD"}
-            </span>
+            </dd>
           </div>
-          <div className="flex items-center gap-2">
-            <Users size={18} className="text-[#80466E]" />
-            <span>
+          <div className="border-2 border-ink bg-wcard p-3">
+            <dt className="eyebrow flex items-center gap-1.5 text-ink-2">
+              <Users size={14} aria-hidden="true" /> Team size
+            </dt>
+            <dd className="mt-1 font-mono text-sm font-bold">
               {data?.teamMaxSize
                 ? data?.teamMaxSize === data?.teamMinSize
                   ? data?.teamMaxSize
                   : `${data?.teamMinSize} - ${data?.teamMaxSize}`
                 : "N/A"}{" "}
               members
-            </span>
+            </dd>
           </div>
-        </div>
+        </dl>
 
         {/* Register Button + Dialog */}
         {user && isRegistered && (
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button
-                className="w-1/2 bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5 rounded-sm font-medium shadow-lg transition-all duration-700 ease-in-out"
+                className="w-full sm:w-auto sm:self-start"
                 disabled={isRegistered}
                 onClick={(e) => {
                   if (!user) {
@@ -631,14 +652,14 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                   : "Register"}
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-[#121212] shadow-lg text-white">
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Select Team</DialogTitle>
                 <DialogDescription>
                   Your team will be locked after registering to the event. You
                   can't add or remove members.
                 </DialogDescription>
-                <form className="flex lg:flex-row flex-col p-3 items-center">
+                <form className="flex flex-col gap-4 pt-3 sm:flex-row sm:items-center">
                   <Select onValueChange={(e) => setTeamId(e)} required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Team" />
@@ -651,18 +672,16 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <div className="p-3">
-                    <Button
-                      type="submit"
-                      className="bg-[#80466E] text-white px-4 py-2.5 rounded-sm font-medium shadow-lg transition-all duration-700 ease-in-out"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        registerTeamMutation.mutateAsync();
-                      }}
-                    >
-                      Register
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    className="shrink-0"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      registerTeamMutation.mutateAsync();
+                    }}
+                  >
+                    Register
+                  </Button>
                 </form>
               </DialogHeader>
             </DialogContent>
@@ -695,14 +714,14 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
           );
 
           return (
-            <div className="mt-4">
-              <p className="mb-2 text-sm text-gray-300">
+            <div className="border-2 border-ink border-l-[8px] border-l-acc-2 bg-wcard p-4">
+              <p className="mb-3 text-sm text-ink">
                 {biggest === 0
                   ? `This event is played in teams of ${min} to ${max}. You are not in a team yet.`
                   : `This event needs at least ${min} members. Your largest team has ${biggest}.`}
               </p>
               <Button
-                className="w-full lg:w-1/2 bg-[#512F5C] hover:bg-[#4b2570] text-white px-8 py-2.5 rounded-sm font-medium shadow-lg"
+                className="w-full whitespace-normal sm:w-auto"
                 onClick={() => navigate(ERouterPaths.TEAMS)}
               >
                 Join or create a team to participate
@@ -712,76 +731,83 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
         })()}
 
         {/* Conveners */}
-        <div className="mt-6">
-          <h2 className="text-lg font-semibold text-[#80466E] mb-3">Conveners</h2>
+        <div className="border-t-2 border-dashed border-line pt-5">
+          <h2 className={sectionTitle}>Conveners</h2>
           {data?.conveners && data?.conveners.length > 0 ? (
-            <div className="flex flex-col gap-4 max-h-40 overflow-y-auto pr-2 scrollbar">
+            <ul className="scrollbar flex max-h-56 flex-col gap-3 overflow-y-auto pb-1 pr-2">
               {data?.conveners?.map((convener: any, idx: number) => (
-                <div
+                <li
                   key={idx}
-                  className="flex items-center gap-3 bg-[#1f1f1f] p-3 rounded-xl hover:bg-[#262626] transition shadow"
+                  className="flex items-center gap-3 border-2 border-ink bg-wcard p-3"
                 >
                   <img
                     src={convener?.profile?.profilePhoto || VioletProfile}
-                    alt="Convener"
-                    className="w-12 h-12 rounded-full border-gray-700"
+                    alt=""
+                    className="h-11 w-11 shrink-0 rounded-full border-2 border-ink object-cover"
                   />
-                  <div>
-                    <p className="font-medium max-[500px]:text-sm text-white">
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-ink max-[500px]:text-sm">
                       {convener?.profile?.firstName} {convener?.profile?.lastName}
                     </p>
-                    <p className="text-sm text-gray-400">{convener?.phoneNumber}</p>
+                    <p className="font-mono text-sm text-ink-2">{convener?.phoneNumber}</p>
                   </div>
-                </div>
+                </li>
               ))}
-            </div>
+            </ul>
           ) : (
-            <p className="text-gray-500 italic">No conveners available now.</p>
+            <p className="text-sm text-ink-2">No conveners available now.</p>
           )}
         </div>
       </section>
 
-      {/* Right Section */}
-      <section className="p-8 max-[500px]:p-6 flex flex-col gap-6 bg-[#1b1b1b] rounded-2xl shadow-2xl">
-        {/* About Event */}
-        <div className="flex flex-col overflow-y-auto pr-2">
-          <h2 className="text-lg font-semibold text-[#80466E] mb-3">
-            About the Event
-          </h2>
-          <p className="text-gray-300 leading-relaxed text-start">
+      {/* Right: description and rounds */}
+      <section className="brut-card flex flex-col gap-6 p-5 sm:p-7">
+        <div>
+          <h2 className={sectionTitle}>About the Event</h2>
+          <p className="whitespace-pre-line text-start text-[15px] leading-relaxed text-ink sm:text-base">
             {data?.description || "No description available."}
           </p>
         </div>
 
-        {/* Rounds */}
-        <div className="flex-1 overflow-y-auto pr-2">
-          <h2 className="text-lg font-semibold text-[#80466E] mb-3">Rounds</h2>
-          <div className="flex flex-wrap gap-3">
+        <div className="border-t-2 border-dashed border-line pt-5">
+          <h2 className={sectionTitle}>Rounds</h2>
+          {/* Round tabs on a heavy rule (§10.7) */}
+          {data?.roundDetails?.rounds?.length > 0 && (
+          <div
+            role="group"
+            aria-label="Rounds"
+            className="flex flex-wrap gap-x-1 border-b-[3px] border-ink"
+          >
             {data?.roundDetails?.rounds?.map((round: any, idx: number) => {
               const isActive = showRound?.name === round?.name;
               return (
-                <div
+                <button
+                  type="button"
                   key={idx}
-                  className={`px-4 py-2 rounded-lg cursor-pointer transition ${
+                  aria-pressed={isActive}
+                  className={`-mb-[3px] min-h-11 border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-4 sm:text-sm ${
                     isActive
-                      ? "bg-[#80466E] text-white shadow-md transition-all duration-700 ease-in-out"
-                      : "bg-[#1f1f1f] hover:bg-[#2a2a2a]"
+                      ? "border-ink border-b-card bg-card text-ink"
+                      : "border-transparent border-b-ink text-ink-2 hover:text-ink"
                   }`}
                   onClick={() => setShowRound(round)}
                 >
                   {round?.name || `Round ${idx + 1}`}
-                </div>
+                </button>
               );
             })}
           </div>
+          )}
           {showRound && (
-            <div className="mt-4 bg-[#1a1a1a] p-4 rounded-xl shadow border border-gray-700">
-              <h3 className="font-semibold text-[#80466E]">{showRound?.name}</h3>
-              <p className="text-gray-300 mt-2">{showRound?.description}</p>
+            <div className="mt-5 border-2 border-ink bg-wcard p-4">
+              <h3 className="font-display text-2xl uppercase leading-none">{showRound?.name}</h3>
+              <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">
+                {showRound?.description}
+              </p>
             </div>
           )}
         </div>
       </section>
-    </main>
+    </div>
   );
 };

@@ -30,22 +30,25 @@ const Profile = () => {
     queryKey: ["user"],
   });
   if (isPending) {
-    return <div>Loading....</div>;
+    return (
+      <div className="brut-container py-16">
+        <p
+          role="status"
+          className="font-mono text-sm uppercase tracking-[0.08em] text-ink"
+        >
+          <span
+            aria-hidden="true"
+            className="mr-2 inline-block h-3 w-2 animate-brut-blink bg-ink align-middle"
+          />
+          Loading....
+        </p>
+      </div>
+    );
   }
   // return windowSize.width >= 1024 ? (
   return (
-    <div className="flex flex-col w-full h-full items-center lg:overflow-hidden">
-      <div className="h-[92vh] lg:flex lg:justify-between w-full gap-4 lg:h-full overflow-auto">
-        {/* <div className="hidden  w-full lg:w-1/4 lg:p-4 lg:flex items-center">
-          <SideBar />
-        </div> */}
-        <div className="w-full lg:flex lg:mx-16 flex-col items-center overflow-auto justify-center">
-          <EditProfile />
-        </div>
-      </div>
-      {/* <div className=" h-[8vh] lg:h-1/6 py-12 bg-[#171717] w-full  items-center   flex justify-center">
-        <NavBar />
-      </div> */}
+    <div className="w-full">
+      <EditProfile />
     </div>
   );
   // ) :  (

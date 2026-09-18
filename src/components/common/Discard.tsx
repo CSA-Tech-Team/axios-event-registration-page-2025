@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { CircleAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DiscardProps {
   cancel: any;
@@ -7,31 +8,33 @@ interface DiscardProps {
 }
 const Discard: FC<DiscardProps> = ({ cancel, discard }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-[#171717] p-5 rounded-lg shadow-lg max-w-md lg:max-w-xl md:max-w-md">
-        <div className="flex flex-col justify-center items-center text-white">
-          <div>
-            <CircleAlert className="w-[100px] h-[100px] stroke-[#E2A52A]"/>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-term/70 px-4">
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="discard-title"
+        aria-describedby="discard-body"
+        className="w-full max-w-md border-2 border-ink bg-card p-6 text-ink shadow-brut-lg"
+      >
+        <div className="flex flex-col items-center text-center">
+          <CircleAlert className="h-16 w-16 text-acc-2" aria-hidden="true" />
+          <div
+            id="discard-title"
+            className="mt-4 font-section text-2xl font-extrabold uppercase leading-none tracking-[-0.02em]"
+          >
+            The changes are unsaved
           </div>
-          <div>The changes are unsaved</div>
-          <div>Are you really sure you want to quit the progress?</div>
+          <div id="discard-body" className="mt-3 text-[15px] leading-relaxed text-ink-2">
+            Are you really sure you want to quit the progress?
+          </div>
         </div>
-        <div className="flex justify-between w-full">
-          <button
-            type="button"
-            className="rounded-2xl px-6 py-2 mx-3 mt-5 lg:px-16 text-white font-semibold border border-white"
-            onClick={() => cancel()}
-          >
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="secondary" onClick={() => cancel()}>
             Cancel
-          </button>
-
-          <button
-            className="rounded-2xl px-8 py-3 mx-2 mt-5 lg:px-16 bg-[#C02727] text-white font-semibold"
-            type="submit"
-            onClick={() => discard()}
-          >
+          </Button>
+          <Button type="submit" variant="destructive" onClick={() => discard()}>
             Discard
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -3,13 +3,14 @@ import { easeOut, motion } from "framer-motion";
 import { EventCard } from "@/components/common/EventCard";
 import { EventDescription } from "@/components/common/EventDescription";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxios from "@/hooks/useAxios";
 import { ApiPaths, ERouterPaths } from "@/constants/enum";
 import { useAuthStore } from "@/store/ApiStates";
 import useWindowDimensions from "@/hooks/useWindowDimension";
 import { ArrowLeft, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const EventsPage = () => {
   const [showEvent, setShowEvent] = useState(false);
@@ -36,63 +37,70 @@ export const EventsPage = () => {
     setShowEvent(false);
   };
   return (
-    <main className="h-full w-full flex justify-between flex-col">
-      <div className="h-full p-4 flex flex-col gap-4  overflow-auto">
-        <div className="p-6 max-[500px]:px-2 h-1/6 text-white lg:pt-16  w-full bg-[#171717] z-10 text-3xl flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {windowSize.width < 1024 && showEvent ? (
-              <div className="text-white " onClick={() => reset()}>
-                <ArrowLeft />
-                {/* <img src={back} alt="" className="w-4" /> */}
-              </div>
-            ) : (
-              ""
-            )}
-            <span>Events</span>
-          </div>
-          
-          <button
-            onClick={() => navigate(ERouterPaths.EVENTSCHEDULE)}
-            className="flex items-center gap-2 bg-[#80466E] text-center bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5 rounded-md font-medium shadow-lg transition-all duration-700 ease-in-out text-xs sm:text-sm lg:text-base"
-            title="View Event Schedule"
-          >
-            <Calendar className="w-4 h-4 lg:w-5 lg:h-5" />
-            <span>Schedule</span>
-          </button>
-        </div>
-        <div className="flex flex-wrap overflow-auto scrollbar">
-          <div
-            className={`flex w-full justify-center flex-wrap px-8 lg:p-12 gap-6 max-[500px]:px-2 `}
-          >
-            {getEvents()?.length != 0 &&
-              getEvents()?.map((elt: any) => (
-                <div
-                  className={`${
-                    showEvent == true ? " w-full" : "lg:w-[45%] w-full"
-                  } flex`}
-                  
-                  onClick={() => navigate(`${ERouterPaths.EVENTS}/${elt.id}`)}
+    <div className="brut-container relative pb-20 pt-10 md:pt-14">
 
-                >
-                  <EventCard data={elt} />
-                </div>
-              ))}
-          </div>
-          {showEvent && (
-            <motion.div
-              className="lg:w-1/2 lg:p-0 w-full overflow-auto scrollbar h-full "
-              animate={{ x: 0, y: 0 }}
-              initial={{ x: -50, y: 50 }}
-              transition={{ ease: easeOut, duration: 0.5 }}
+      <header className="flex flex-col items-start justify-between gap-8 border-b-2 border-ink pb-6 sm:flex-row sm:items-end">
+        <div className="flex items-end gap-4">
+          {windowSize.width < 1024 && showEvent && (
+            <button
+              type="button"
+              aria-label="Back to events"
+              onClick={() => reset()}
+              className="mb-1 flex h-11 w-11 items-center justify-center border-2 border-ink bg-wcard shadow-brut-sm"
             >
-              <EventDescription data={eventDescription} />
-            </motion.div>
+              <ArrowLeft className="h-5 w-5" />
+            </button>
           )}
+          <div className="relative">
+            <p className="eyebrow text-ink-2">Axios · The lineup</p>
+            <h1 className="display-title registration mt-2">Events</h1>
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-4 left-[45%] whitespace-nowrap -rotate-6 font-note text-lg text-acc md:text-2xl"
+            >
+              pick your arena
+            </span>
+          </div>
         </div>
+
+        <Button
+          variant="secondary"
+          onClick={() => navigate(ERouterPaths.EVENTSCHEDULE)}
+        >
+          <Calendar className="h-4 w-4" aria-hidden="true" />
+          Schedule
+        </Button>
+      </header>
+
+      <div
+        className={`mt-12 grid gap-8 md:gap-10 ${
+          showEvent ? "lg:grid-cols-2" : "grid-cols-[repeat(auto-fill,minmax(min(100%,300px),1fr))]"
+        }`}
+      >
+        <ul className="contents">
+          {getEvents()?.length != 0 &&
+            getEvents()?.map((elt: any, index: number) => (
+              <li key={elt.id} className="flex">
+                <Link
+                  to={`${ERouterPaths.EVENTS}/${elt.id}`}
+                  className="group flex w-full focus-visible:outline-offset-8"
+                >
+                  <EventCard data={elt} index={index} />
+                </Link>
+              </li>
+            ))}
+        </ul>
+        {showEvent && (
+          <motion.div
+            className="w-full"
+            animate={{ x: 0, y: 0 }}
+            initial={{ x: -50, y: 50 }}
+            transition={{ ease: easeOut, duration: 0.5 }}
+          >
+            <EventDescription data={eventDescription} />
+          </motion.div>
+        )}
       </div>
-      {/* <div className=" h-[8vh] lg:h-1/6 py-12 bg-[#171717] w-full  items-center    flex justify-center">
-        <NavBar />
-      </div> */}
-    </main>
+    </div>
   );
 };

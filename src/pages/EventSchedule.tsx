@@ -3,6 +3,7 @@ import { ArrowLeft, Calendar, Clock, MapPin, Users, Download } from 'lucide-reac
 import { motion, easeOut } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ERouterPaths } from '@/constants/enum';
+import { Button } from '@/components/ui/button';
 
 const EventSchedule = () => {
     const navigate = useNavigate();
@@ -91,18 +92,19 @@ const EventSchedule = () => {
 
     const timeSlots = generateHourlyTimeSlots(currentSchedule);
 
-    // Updated color scheme - each category gets a different color
+    // One spectrum colour per event family (§3.2) - used only as a small
+    // category mark, never as a fill behind text.
     const getCategoryColor = (category) => {
         switch (category) {
-            case 'General Events': return 'bg-gradient-to-r from-purple-500 to-purple-600';
-            case 'Data Quest': return 'bg-gradient-to-r from-blue-500 to-blue-600';
-            case 'Tech Triathlon': return 'bg-gradient-to-r from-green-500 to-green-600';
-            case 'Math Mania': return 'bg-gradient-to-r from-orange-500 to-orange-600';
-            case 'Breach Point': return 'bg-gradient-to-r from-red-500 to-red-600';
-            case 'Game Over': return 'bg-gradient-to-r from-pink-500 to-pink-600';
-            case 'Survivor\'s Court': return 'bg-gradient-to-r from-teal-500 to-teal-600';
-            case 'Q-Factor': return 'bg-gradient-to-r from-indigo-500 to-indigo-600';
-            default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
+            case 'General Events': return 'var(--r6)';
+            case 'Data Quest': return 'var(--r5)';
+            case 'Tech Triathlon': return 'var(--r4)';
+            case 'Math Mania': return 'var(--r2)';
+            case 'Breach Point': return 'var(--r1)';
+            case 'Game Over': return 'var(--r7)';
+            case 'Survivor\'s Court': return 'var(--r3)';
+            case 'Q-Factor': return 'var(--ink)';
+            default: return 'var(--ink2)';
         }
     };
 
@@ -164,37 +166,48 @@ const EventSchedule = () => {
         document.body.removeChild(link);
     };
 
+    const CategoryMark = ({ category }: { category: string }) => (
+        <span
+            aria-hidden="true"
+            className="inline-block h-3 w-3 shrink-0 border-2 border-ink"
+            style={{ background: getCategoryColor(category) }}
+        />
+    );
+
     const EventDetailsModal = ({ event }) => (
         <motion.div
-            className="lg:w-1/2 lg:p-0 w-full overflow-auto scrollbar h-full bg-[#1F102D] p-4"
+            className="w-full"
             animate={{ x: 0, y: 0 }}
-            initial={{ x: -50, y: 50 }}
-            transition={{ ease: easeOut, duration: 0.5 }}
+            initial={{ x: -12, y: 12 }}
+            transition={{ ease: easeOut, duration: 0.2 }}
         >
-            <div className="bg-[#311A49] rounded-xl p-6 border border-[#5F59598A]">
-                <div className={`w-full h-2 ${getCategoryColor(event.category)} rounded-full mb-4`}></div>
-                <h2 className="text-2xl font-bold text-white mb-4">{event.fullName}</h2>
-                <div className="space-y-3 text-gray-300">
+            <div className="brut-card p-5">
+                <p className="eyebrow flex items-center gap-2 text-ink-2">
+                    <CategoryMark category={event.category} />
+                    {event.category}
+                </p>
+                <h2 className="mt-2 font-display text-3xl uppercase leading-[0.9] text-ink">{event.fullName}</h2>
+                <div className="mt-4 space-y-3 border-t-2 border-dashed border-line pt-4 text-sm text-ink">
                     <div className="flex items-center">
-                        <Clock className="w-5 h-5 mr-3" />
-                        <span>{event.time} - {event.endTime}</span>
+                        <Clock className="mr-3 h-5 w-5" aria-hidden="true" />
+                        <span className="font-mono">{event.time} - {event.endTime}</span>
                     </div>
                     {event.location && (
                         <div className="flex items-center">
-                            <MapPin className="w-5 h-5 mr-3" />
+                            <MapPin className="mr-3 h-5 w-5" aria-hidden="true" />
                             <span>{event.location}</span>
                         </div>
                     )}
                     <div className="flex items-center">
-                        <Calendar className="w-5 h-5 mr-3" />
+                        <Calendar className="mr-3 h-5 w-5" aria-hidden="true" />
                         <span>Duration: {event.duration} minutes</span>
                     </div>
                     <div className="flex items-center">
-                        <Users className="w-5 h-5 mr-3" />
+                        <Users className="mr-3 h-5 w-5" aria-hidden="true" />
                         <span>Category: {event.category}</span>
                     </div>
                     <div className="flex items-center">
-                        <Users className="w-5 h-5 mr-3" />
+                        <Users className="mr-3 h-5 w-5" aria-hidden="true" />
                         <span>Type: {event.type.charAt(0).toUpperCase() + event.type.slice(1)}</span>
                     </div>
                 </div>
@@ -202,243 +215,222 @@ const EventSchedule = () => {
         </motion.div>
     );
 
-    return (
-        <main className="h-full w-full flex justify-between flex-col bg-[#171717]">
-            <style jsx>{`
-                .scrollbar::-webkit-scrollbar {
-                    width: 4px;
-                    height: 4px;
-                }
-                .scrollbar::-webkit-scrollbar-track {
-                    background: rgba(0, 0, 0, 0.1);
-                }
-                .scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0, 0, 0, 0.3);
-                    border-radius: 2px;
-                }
-                .scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: rgba(0, 0, 0, 0.5);
-                }
-            `}</style>
+    const dayTab = (day: number, label: string) => (
+        <button
+            type="button"
+            aria-pressed={selectedDay === day}
+            onClick={() => setSelectedDay(day)}
+            className={`-mb-[3px] min-h-11 border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-5 sm:text-sm ${selectedDay === day
+                ? 'border-ink border-b-card bg-card text-ink'
+                : 'border-transparent border-b-ink text-ink-2 hover:text-ink'
+                }`}
+        >
+            {label}
+        </button>
+    );
 
-            {/* Hover Overlay */}
+    return (
+        <div className="brut-container pb-20 pt-8 md:pt-10">
+            {/* Hover preview (desktop enhancement only - every fact is also in the block) */}
             {hoveredEvent && windowWidth >= 768 && (
                 <div
-                    className="fixed z-50 pointer-events-none bg-[#1F102D] border-2 border-[#5F5959] rounded-xl p-4 shadow-2xl max-w-sm w-72"
+                    className="pointer-events-none fixed z-50 w-72 max-w-sm border-2 border-ink bg-card p-4 text-ink shadow-brut-md"
                     style={{
                         left: mousePosition.x + 15,
                         top: mousePosition.y - 10,
                         transform: mousePosition.x > window.innerWidth - 300 ? 'translateX(-100%) translateX(-15px)' : 'none'
                     }}
                 >
-                    <div className={`w-full h-2 ${getCategoryColor(hoveredEvent.category)} rounded-full mb-3`}></div>
-                    <h3 className="text-lg font-bold text-white mb-3">{hoveredEvent.fullName}</h3>
-                    <div className="space-y-2 text-gray-300">
+                    <p className="eyebrow flex items-center gap-2 text-ink-2">
+                        <CategoryMark category={hoveredEvent.category} />
+                        {hoveredEvent.category}
+                    </p>
+                    <h3 className="mt-2 font-display text-2xl uppercase leading-[0.9]">{hoveredEvent.fullName}</h3>
+                    <div className="mt-3 space-y-2 border-t-2 border-dashed border-line pt-3 text-xs">
                         <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-2 text-blue-400" />
-                            <span className="text-xs">{hoveredEvent.time} - {hoveredEvent.endTime}</span>
+                            <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
+                            <span className="font-mono">{hoveredEvent.time} - {hoveredEvent.endTime}</span>
                         </div>
                         <div className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-2 text-green-400" />
-                            <span className="text-xs">{hoveredEvent.location}</span>
+                            <MapPin className="mr-2 h-4 w-4" aria-hidden="true" />
+                            <span>{hoveredEvent.location}</span>
                         </div>
                         <div className="flex items-center">
-                            <Users className="w-4 h-4 mr-2 text-purple-400" />
-                            <span className="text-xs">{hoveredEvent.category}</span>
+                            <Calendar className="mr-2 h-4 w-4" aria-hidden="true" />
+                            <span>{hoveredEvent.type.charAt(0).toUpperCase() + hoveredEvent.type.slice(1)}</span>
                         </div>
                         <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-2 text-orange-400" />
-                            <span className="text-xs">{hoveredEvent.type.charAt(0).toUpperCase() + hoveredEvent.type.slice(1)}</span>
-                        </div>
-                        <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-2 text-pink-400" />
-                            <span className="text-xs">{hoveredEvent.duration}</span>
+                            <Clock className="mr-2 h-4 w-4" aria-hidden="true" />
+                            <span className="font-mono">{hoveredEvent.duration}</span>
                         </div>
                     </div>
                 </div>
             )}
 
-            <div className="h-full p-2 flex flex-col gap-2 overflow-auto scrollbar">
-                {/* Header */}
-                <div className="p-4 max-[500px]:px-2 h-1/6 text-white lg:pt-8 w-full bg-[#171717] z-10 text-3xl flex items-center gap-4 justify-between">
-                    <div className="flex items-center gap-4">
-                        {/* Back button for mobile event details OR desktop back to events */}
-                        {windowWidth < 768 && showEventDetails ? (
-                            <div className="text-white cursor-pointer" onClick={reset}>
-                                <ArrowLeft />
-                            </div>
-                        ) : (
-                            <button 
-                                onClick={() => navigate(ERouterPaths.EVENTS)}
-                                className="text-white hover:text-gray-300 transition-colors p-1 rounded-md hover:bg-gray-800"
-                                title="Back to Events"
-                            >
-                                <ArrowLeft className="w-6 h-6" />
-                            </button>
-                        )}
-                        <span className="text-2xl md:text-3xl">Event Schedule</span>
-                    </div>
-
-                    {/* Day Toggle */}
-                    <div className="flex items-center gap-3">                        
-                        <div className="flex bg-[#311A49] rounded-lg overflow-hidden">
-                            <button
-                                onClick={() => setSelectedDay(1)}
-                                className={`px-3 md:px-4 py-2 font-semibold transition-colors text-xs md:text-sm ${selectedDay === 1
-                                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
-                                    : 'text-gray-300 hover:bg-[#3D1F5A]'
-                                    }`}
-                            >
-                                Day One
-                            </button>
-                            <button
-                                onClick={() => setSelectedDay(2)}
-                                className={`px-3 md:px-4 py-2 font-semibold transition-colors text-xs md:text-sm ${selectedDay === 2
-                                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
-                                    : 'text-gray-300 hover:bg-[#3D1F5A]'
-                                    }`}
-                            >
-                                Day Two
-                            </button>
-                        </div>
-                        <button
-                            onClick={handleDownload}
-                            className="bg-[#311A49] hover:bg-gradient-to-r hover:from-purple-500 hover:to-purple-600 p-3 md:p-3 rounded-lg transition-all duration-200 text-gray-300 hover:text-white group min-w-[48px] min-h-[48px] flex items-center justify-center"
-                            title="Download Event Schedule PDF"
+            {/* Header */}
+            <header className="flex flex-col items-start justify-between gap-6 border-b-2 border-ink pb-6 sm:flex-row sm:items-end">
+                <div>
+                    {/* Back button for mobile event details OR back to events */}
+                    {windowWidth < 768 && showEventDetails ? (
+                        <Button variant="secondary" size="sm" onClick={reset}>
+                            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                            Back to schedule
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => navigate(ERouterPaths.EVENTS)}
+                            title="Back to Events"
                         >
-                            <Download className="w-6 h-6 md:w-5 md:h-5 group-hover:scale-110 transition-transform" />
-                        </button>
-                    </div>
+                            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                            Back to Events
+                        </Button>
+                    )}
+                    <p className="eyebrow mt-6 text-ink-2">Axios · Timetable</p>
+                    <h1 className="display-title registration mt-2">Event Schedule</h1>
                 </div>
 
-                {/* Main Content */}
-                <div className="flex flex-wrap overflow-auto scrollbar">
-                    <div className={`flex w-full justify-center flex-wrap px-2 md:px-4 lg:p-6 gap-4 max-[500px]:px-1 ${showEventDetails ? 'md:w-1/2' : 'w-full'}`}>
+                <Button
+                    variant="secondary"
+                    onClick={handleDownload}
+                    title="Download Event Schedule PDF"
+                >
+                    <Download className="h-4 w-4" aria-hidden="true" />
+                    Download PDF
+                </Button>
+            </header>
 
-                        {/* Tablet/Desktop: Category-based Timeline */}
-                        {windowWidth >= 768 ? (
-                            <div className="w-full bg-[#1F102D] rounded-xl p-3 md:p-4 overflow-auto scrollbar-none" style={{ minHeight: '700px', minWidth: '100%' }}>
-                                <div className="relative" style={{ minWidth: `${timeSlots.length * 120 + 200}px`, height: `${eventCategories.length * 60 + 60}px` }}>
+            {/* Day tabs on a heavy rule */}
+            <div role="group" aria-label="Day" className="mt-8 flex gap-x-1 border-b-[3px] border-ink">
+                {dayTab(1, 'Day One')}
+                {dayTab(2, 'Day Two')}
+            </div>
 
-                                    {/* Fixed Y-axis - Category Labels with increased thickness */}
-                                    <div className="absolute left-0 top-0 w-52 bg-[#1F102D] z-20 border-r-4 border-[#5F5959]">
-                                        <div className="h-16 border-b border-[#5F59598A] bg-[#1F102D]"></div> {/* Header spacer */}
-                                        {eventCategories.map((category, index) => (
-                                            <div
-                                                key={category}
-                                                className="text-gray-300 text-xs md:text-sm flex items-center border-b border-[#5F59598A] pr-2 font-medium bg-[#1F102D] py-2"
-                                                style={{ height: '70px' }}
-                                            >
-                                                <div className="truncate leading-tight" title={category}>{category}</div>
-                                            </div>
-                                        ))}
-                                    </div>
+            {/* Main Content */}
+            <div className="mt-8">
+                {showEventDetails && selectedEvent ? (
+                    <EventDetailsModal event={selectedEvent} />
+                ) : windowWidth >= 768 ? (
+                    /* Tablet/Desktop: Category-based Timeline */
+                    <div className="scrollbar w-full overflow-auto border-2 border-ink bg-wcard shadow-brut-md">
+                        <div className="relative" style={{ minWidth: `${timeSlots.length * 120 + 208}px`, height: `${eventCategories.length * 70 + 60}px` }}>
 
-                                    {/* Timeline Container */}
-                                    <div className="ml-52">
-                                        {/* Fixed X-axis - Time Labels (hourly) */}
-                                        <div className="top-0 flex border-b border-[#5F59598A] pb-2 bg-[#1F102D] z-10" style={{ height: '60px' }}>
-                                            {timeSlots.map((time, index) => (
-                                                <div
-                                                    key={time}
-                                                    className="text-gray-400 text-xs md:text-sm text-left font-medium flex items-center px-1"
-                                                    style={{ width: '120px', minWidth: '120px' }}
-                                                >
-                                                    {time}
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        {/* Events Grid */}
-                                        <div className="relative" style={{ height: `${eventCategories.length * 70}px` }}>
-                                            {currentSchedule.map((event, index) => (
-                                                <div
-                                                    key={index}
-                                                    className={`absolute ${getCategoryColor(event.category)} rounded-lg text-white cursor-pointer hover:opacity-90 transition-all hover:scale-105 border border-white border-opacity-20 flex flex-col justify-center p-2 overflow-hidden shadow-lg`}
-                                                    style={{
-                                                        left: `${getTimePosition(event.time)}px`,
-                                                        top: `${getCategoryPosition(event.category) + 10}px`,
-                                                        width: `${getDurationWidth(event.time, event.endTime)}px`,
-                                                        height: '50px'
-                                                    }}
-                                                    onClick={() => handleEventClick(event)}
-                                                    onMouseEnter={(e) => handleMouseEnter(event, e)}
-                                                    onMouseMove={handleMouseMove}
-                                                    onMouseLeave={handleMouseLeave}
-                                                >
-                                                    <div className="font-semibold text-xs truncate leading-tight" title={event.fullName}>
-                                                        {event.fullName}
-                                                    </div>
-                                                    <div className="text-xs opacity-90 truncate leading-tight" title={event.location}>
-                                                        {event.location}
-                                                    </div>
-                                                </div>
-                                            ))}
-
-                                            {/* Vertical grid lines */}
-                                            {timeSlots.map((_, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="absolute top-0 bottom-0 border-l border-[#5F59598A] opacity-30"
-                                                    style={{ left: `${index * 120}px`, width: '1px' }}
-                                                />
-                                            ))}
-
-                                            {/* Horizontal grid lines */}
-                                            {eventCategories.map((_, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="absolute left-0 right-0 border-b border-[#5F59598A] opacity-30"
-                                                    style={{ top: `${index * 70}px`, height: '1px' }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
+                            {/* Fixed Y-axis - Category Labels */}
+                            <div className="absolute left-0 top-0 z-20 w-52 border-r-2 border-ink bg-card">
+                                <div className="flex items-end border-b-2 border-ink px-3 pb-2" style={{ height: '60px' }}>
+                                    <span className="eyebrow text-ink-2">Event</span>
                                 </div>
-                            </div>
-                        ) : (
-                            /* Mobile: Card Layout */
-                            <div className="w-full space-y-3">
-                                {currentSchedule.map((event, index) => (
+                                {eventCategories.map((category) => (
                                     <div
-                                        key={index}
-                                        className="bg-[#1F102D] rounded-xl p-3 border border-[#5F59598A] cursor-pointer hover:bg-[#311A49] transition-colors"
-                                        
+                                        key={category}
+                                        className="flex items-center gap-2 border-b border-line px-3 text-sm font-bold text-ink"
+                                        style={{ height: '70px' }}
                                     >
-                                        <div className={`w-full h-1 ${getCategoryColor(event.category)} rounded-full mb-3`}></div>
-                                        <div className="flex justify-between items-start mb-2">
-                                            <h3 className="font-bold text-white text-lg">{event.fullName}</h3>
-                                            <span className="text-gray-400 text-sm">{event.time}</span>
-                                        </div>
-                                        <div className="flex items-center text-gray-300 text-sm mb-2">
-                                            <Calendar className="w-4 h-4 mr-2" />
-                                            <span className="truncate">{event.category}</span>
-                                        </div>
-                                        <div className="flex items-center text-gray-300 text-sm mb-2">
-                                            <MapPin className="w-4 h-4 mr-2" />
-                                            <span className="truncate">{event.location}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-gray-400 text-sm">
-                                                {event.time} - {event.endTime}
-                                            </span>
-                                            <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(event.category)} text-white`}>
-                                                {event.type}
-                                            </span>
-                                        </div>
+                                        <CategoryMark category={category} />
+                                        <div className="truncate leading-tight" title={category}>{category}</div>
                                     </div>
                                 ))}
                             </div>
-                        )}
-                    </div>
 
-                    {/* Event Details Panel */}
-                    {showEventDetails && selectedEvent && (
-                        <EventDetailsModal event={selectedEvent} />
-                    )}
-                </div>
+                            {/* Timeline Container */}
+                            <div className="ml-52">
+                                {/* X-axis - Time Labels (hourly) */}
+                                <div className="flex border-b-2 border-ink" style={{ height: '60px' }}>
+                                    {timeSlots.map((time) => (
+                                        <div
+                                            key={time}
+                                            className="flex items-end px-1 pb-2 font-mono text-xs font-bold text-ink"
+                                            style={{ width: '120px', minWidth: '120px' }}
+                                        >
+                                            {time}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Events Grid */}
+                                <div className="relative" style={{ height: `${eventCategories.length * 70}px` }}>
+                                    {/* Vertical grid lines */}
+                                    {timeSlots.map((_, index) => (
+                                        <div
+                                            key={index}
+                                            className="absolute bottom-0 top-0 border-l border-dashed border-line"
+                                            style={{ left: `${index * 120}px`, width: '1px' }}
+                                        />
+                                    ))}
+
+                                    {/* Horizontal grid lines */}
+                                    {eventCategories.map((_, index) => (
+                                        <div
+                                            key={index}
+                                            className="absolute left-0 right-0 border-b border-line"
+                                            style={{ top: `${(index + 1) * 70}px`, height: '1px' }}
+                                        />
+                                    ))}
+
+                                    {currentSchedule.map((event, index) => (
+                                        <div
+                                            key={index}
+                                            className="absolute flex cursor-pointer flex-col justify-center overflow-hidden border-2 border-ink bg-card py-1.5 pl-3 pr-2 text-ink transition-[transform,box-shadow] duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brut-sm"
+                                            style={{
+                                                left: `${getTimePosition(event.time)}px`,
+                                                top: `${getCategoryPosition(event.category) + 10}px`,
+                                                width: `${getDurationWidth(event.time, event.endTime)}px`,
+                                                height: '50px',
+                                                borderLeft: `8px solid ${getCategoryColor(event.category)}`
+                                            }}
+                                            onClick={() => handleEventClick(event)}
+                                            onMouseEnter={(e) => handleMouseEnter(event, e)}
+                                            onMouseMove={handleMouseMove}
+                                            onMouseLeave={handleMouseLeave}
+                                        >
+                                            <div className="truncate text-xs font-bold leading-tight" title={event.fullName}>
+                                                {event.fullName}
+                                            </div>
+                                            <div className="truncate font-mono text-[11px] leading-tight text-ink-2" title={event.location}>
+                                                {event.location}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    /* Mobile: Card Layout */
+                    <ul className="w-full space-y-4">
+                        {currentSchedule.map((event, index) => (
+                            <li
+                                key={index}
+                                className="border-2 border-ink bg-card p-4 text-ink shadow-brut-sm"
+                                style={{ borderLeft: `8px solid ${getCategoryColor(event.category)}` }}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <h3 className="text-lg font-bold leading-tight">{event.fullName}</h3>
+                                    <span className="shrink-0 border-2 border-ink bg-wcard px-1.5 py-0.5 font-mono text-xs font-bold">{event.time}</span>
+                                </div>
+                                <div className="mt-3 flex items-center text-sm text-ink-2">
+                                    <Calendar className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                                    <span className="truncate">{event.category}</span>
+                                </div>
+                                <div className="mt-1.5 flex items-center text-sm text-ink-2">
+                                    <MapPin className="mr-2 h-4 w-4 shrink-0" aria-hidden="true" />
+                                    <span className="truncate">{event.location}</span>
+                                </div>
+                                <div className="mt-3 flex items-center justify-between border-t-2 border-dashed border-line pt-3">
+                                    <span className="font-mono text-sm">
+                                        {event.time} - {event.endTime}
+                                    </span>
+                                    <span className="eyebrow border-2 border-ink px-2 py-0.5">
+                                        {event.type}
+                                    </span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
-        </main>
+        </div>
     );
 };
 
