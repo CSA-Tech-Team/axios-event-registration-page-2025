@@ -5,12 +5,7 @@ import emblem from "@/assets/axiosemblem.png";
 import GoogleIcon from "@/components/common/GoogleIcon";
 import { ERouterPaths } from "@/constants/enum";
 import { signInWithGoogle, useSession } from "@/lib/auth-client";
-
-const ERROR_MESSAGES: Record<string, string> = {
-  oauth: "Google sign-in was cancelled or failed. Please try again.",
-  access_denied: "You declined the Google permission request.",
-  session: "Your session has expired. Please sign in again.",
-};
+import { SIGN_IN_START_ERROR, signInErrorMessage } from "@/lib/auth-errors";
 
 /**
  * Google is the only way in. The email/password + OTP flow this page used to
@@ -33,7 +28,7 @@ const SignIn = () => {
 
   useEffect(() => {
     if (errorParam) {
-      setError(ERROR_MESSAGES[errorParam] ?? "Something went wrong signing in.");
+      setError(signInErrorMessage(errorParam));
     }
   }, [errorParam]);
 
@@ -70,8 +65,9 @@ const SignIn = () => {
         `${window.location.origin}${ERouterPaths.AUTH_CALLBACK}`,
         `${window.location.origin}${ERouterPaths.SIGNIN}?error=oauth`,
       );
-    } catch {
-      setError("Could not reach the sign-in service. Please try again.");
+    } catch (err) {
+      console.error("Google sign-in could not be started", err);
+      setError(SIGN_IN_START_ERROR);
       setIsRedirecting(false);
     }
   };
