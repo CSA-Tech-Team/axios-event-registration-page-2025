@@ -496,16 +496,13 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     );
   }, [registeredEvents, eventId]);
 
-  // Register team mutation. A solo event passes its team id directly (the
-  // person is never asked to pick one), so accept an override rather than
-  // relying only on the dialog's `teamId` state.
+  // Register team mutation
   const registerTeamMutation = useMutation({
-    mutationFn: async (overrideTeamId?: string) => {
-      const chosenTeamId = overrideTeamId ?? teamId;
-      if (chosenTeamId) {
+    mutationFn: async () => {
+      if (teamId) {
         const response = await postWithAuth(
           "/me" + ApiPaths.EVENT + `/${data?.id}` + ApiPaths.EVENT_REGISTER,
-          { teamId: chosenTeamId }
+          { teamId }
         );
         return response?.data;
       } else {
@@ -544,42 +541,11 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
 
   const minSize = data?.teamMinSize ?? 1;
   const maxSize = data?.teamMaxSize ?? 1;
-  // Single-participation event: nobody is asked to pick a team, they just
-  // register (with their own one-person team behind the scenes).
-  const isSolo = minSize === 1 && maxSize === 1;
   const sizeLabel = minSize === maxSize ? `${minSize}` : `${minSize} to ${maxSize}`;
   const fittingTeams = (ownedTeams ?? []).filter((team: any) => {
     const size = team?.members?.length ?? 0;
     return size >= minSize && size <= maxSize;
   });
-
-  // Runs the profile / team pre-checks common to both paths. Returns false and
-  // redirects (with a toast) when the person can't register yet.
-  const passesRegisterChecks = () => {
-    if (!signedIn) {
-      navigate(ERouterPaths.SIGNIN);
-      return false;
-    }
-    if (!getIsProfileCompleted()) {
-      toast({
-        title: "Complete your profile",
-        description: "Please complete your profile to register for events.",
-      });
-      navigate(ERouterPaths.PROFILE);
-      return false;
-    }
-    if (fittingTeams.length === 0) {
-      toast({
-        title: isSolo ? "Finish setting up your profile" : "No team fits this event",
-        description: isSolo
-          ? "We couldn't find your entry yet. Please try again in a moment."
-          : `You need to own a team of ${sizeLabel} members to register.`,
-      });
-      if (!isSolo) navigate(ERouterPaths.TEAMS);
-      return false;
-    }
-    return true;
-  };
 
   const logo = eventLogo(data);
   const sectionTitle = "eyebrow mb-3 text-ink-2";
@@ -661,26 +627,34 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
               <Button className="w-full sm:w-auto sm:self-start" disabled>
                 Registration closed
               </Button>
-            ) : isSolo ? (
-              // Solo event: no team picker — register straight away with the
-              // person's own one-person team.
-              <Button
-                className="w-full sm:w-auto sm:self-start"
-                disabled={registerTeamMutation.isPending}
-                onClick={() => {
-                  if (!passesRegisterChecks()) return;
-                  registerTeamMutation.mutateAsync(fittingTeams[0]?.id);
-                }}
-              >
-                {registerTeamMutation.isPending ? "Registering…" : "Register ▸"}
-              </Button>
             ) : (
               <DialogTrigger asChild>
                 <Button
                   className="w-full sm:w-auto sm:self-start"
                   onClick={(e) => {
-                    if (!passesRegisterChecks()) {
+                    if (!signedIn) {
                       e.preventDefault();
+                      navigate(ERouterPaths.SIGNIN);
+                      return;
+                    }
+                    if (!getIsProfileCompleted()) {
+                      e.preventDefault();
+                      toast({
+                        title: "Complete your profile",
+                        description:
+                          "Please complete your profile to register for events.",
+                      });
+                      navigate(ERouterPaths.PROFILE);
+                      return;
+                    }
+                    if (fittingTeams.length === 0) {
+                      e.preventDefault();
+                      toast({
+                        title: "No team fits this event",
+                        description: `You need to own a team of ${sizeLabel} members to register.`,
+                      });
+                      navigate(ERouterPaths.TEAMS);
+                      return;
                     }
                   }}
                 >
@@ -719,7 +693,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                     disabled={registerTeamMutation.isPending}
                     onClick={(e) => {
                       e.preventDefault();
-                      registerTeamMutation.mutateAsync(teamId);
+                      registerTeamMutation.mutateAsync();
                     }}
                   >
                     Register
