@@ -454,7 +454,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     eventId = data?.id;
   }
 
-  // Auto-select first round on load
+  // Auto-select first round on load (drives the tab view on md+ screens).
   useEffect(() => {
     if (data?.roundDetails?.rounds?.length > 0) {
       setShowRound(data.roundDetails.rounds[0]);
@@ -496,13 +496,16 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
     );
   }, [registeredEvents, eventId]);
 
-  // Register team mutation
+  // Register team mutation. A solo event passes its team id directly (the
+  // person is never asked to pick one), so accept an override rather than
+  // relying only on the dialog's `teamId` state.
   const registerTeamMutation = useMutation({
-    mutationFn: async () => {
-      if (teamId) {
+    mutationFn: async (overrideTeamId?: string) => {
+      const chosenTeamId = overrideTeamId ?? teamId;
+      if (chosenTeamId) {
         const response = await postWithAuth(
           "/me" + ApiPaths.EVENT + `/${data?.id}` + ApiPaths.EVENT_REGISTER,
-          { teamId }
+          { teamId: chosenTeamId }
         );
         return response?.data;
       } else {
@@ -541,11 +544,42 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
 
   const minSize = data?.teamMinSize ?? 1;
   const maxSize = data?.teamMaxSize ?? 1;
+  // Single-participation event: nobody is asked to pick a team, they just
+  // register (with their own one-person team behind the scenes).
+  const isSolo = minSize === 1 && maxSize === 1;
   const sizeLabel = minSize === maxSize ? `${minSize}` : `${minSize} to ${maxSize}`;
   const fittingTeams = (ownedTeams ?? []).filter((team: any) => {
     const size = team?.members?.length ?? 0;
     return size >= minSize && size <= maxSize;
   });
+
+  // Runs the profile / team pre-checks common to both paths. Returns false and
+  // redirects (with a toast) when the person can't register yet.
+  const passesRegisterChecks = () => {
+    if (!signedIn) {
+      navigate(ERouterPaths.SIGNIN);
+      return false;
+    }
+    if (!getIsProfileCompleted()) {
+      toast({
+        title: "Complete your profile",
+        description: "Please complete your profile to register for events.",
+      });
+      navigate(ERouterPaths.PROFILE);
+      return false;
+    }
+    if (fittingTeams.length === 0) {
+      toast({
+        title: isSolo ? "Finish setting up your profile" : "No team fits this event",
+        description: isSolo
+          ? "We couldn't find your entry yet. Please try again in a moment."
+          : `You need to own a team of ${sizeLabel} members to register.`,
+      });
+      if (!isSolo) navigate(ERouterPaths.TEAMS);
+      return false;
+    }
+    return true;
+  };
 
   const logo = eventLogo(data);
   const sectionTitle = "eyebrow mb-3 text-ink-2";
@@ -627,34 +661,26 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
               <Button className="w-full sm:w-auto sm:self-start" disabled>
                 Registration closed
               </Button>
+            ) : isSolo ? (
+              // Solo event: no team picker — register straight away with the
+              // person's own one-person team.
+              <Button
+                className="w-full sm:w-auto sm:self-start"
+                disabled={registerTeamMutation.isPending}
+                onClick={() => {
+                  if (!passesRegisterChecks()) return;
+                  registerTeamMutation.mutateAsync(fittingTeams[0]?.id);
+                }}
+              >
+                {registerTeamMutation.isPending ? "Registering…" : "Register ▸"}
+              </Button>
             ) : (
               <DialogTrigger asChild>
                 <Button
                   className="w-full sm:w-auto sm:self-start"
                   onClick={(e) => {
-                    if (!signedIn) {
+                    if (!passesRegisterChecks()) {
                       e.preventDefault();
-                      navigate(ERouterPaths.SIGNIN);
-                      return;
-                    }
-                    if (!getIsProfileCompleted()) {
-                      e.preventDefault();
-                      toast({
-                        title: "Complete your profile",
-                        description:
-                          "Please complete your profile to register for events.",
-                      });
-                      navigate(ERouterPaths.PROFILE);
-                      return;
-                    }
-                    if (fittingTeams.length === 0) {
-                      e.preventDefault();
-                      toast({
-                        title: "No team fits this event",
-                        description: `You need to own a team of ${sizeLabel} members to register.`,
-                      });
-                      navigate(ERouterPaths.TEAMS);
-                      return;
                     }
                   }}
                 >
@@ -693,7 +719,7 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
                     disabled={registerTeamMutation.isPending}
                     onClick={(e) => {
                       e.preventDefault();
-                      registerTeamMutation.mutateAsync();
+                      registerTeamMutation.mutateAsync(teamId);
                     }}
                   >
                     Register
@@ -765,40 +791,69 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
 
         <div className="border-t-2 border-dashed border-line pt-5">
           <h2 className={sectionTitle}>Rounds</h2>
-          {/* Round tabs on a heavy rule (§10.7) */}
-          {data?.roundDetails?.rounds?.length > 0 && (
-          <div
-            role="group"
-            aria-label="Rounds"
-            className="scrollbar-hide -mx-1 flex gap-x-1 overflow-x-auto border-b-[3px] border-ink px-1"
-          >
-            {data?.roundDetails?.rounds?.map((round: any, idx: number) => {
-              const isActive = showRound?.name === round?.name;
-              return (
-                <button
-                  type="button"
-                  key={idx}
-                  aria-pressed={isActive}
-                  className={`-mb-[3px] min-h-11 shrink-0 whitespace-nowrap border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-4 sm:text-sm ${
-                    isActive
-                      ? "border-ink border-b-card bg-card text-ink"
-                      : "border-transparent border-b-ink text-ink-2 hover:text-ink"
-                  }`}
-                  onClick={() => setShowRound(round)}
+          {data?.roundDetails?.rounds?.length > 0 ? (
+            <>
+              {/* Small screens: one card per round, stacked — so the titles
+                  never collide or force a horizontal scroll. */}
+              <div className="flex flex-col gap-4 md:hidden">
+                {data?.roundDetails?.rounds?.map((round: any, idx: number) => (
+                  <div key={idx} className="border-2 border-ink bg-wcard p-4">
+                    <div className="flex items-baseline gap-3">
+                      <span className="shrink-0 border-2 border-ink bg-card px-2 py-0.5 font-mono text-xs font-bold">
+                        {idx + 1}
+                      </span>
+                      <h3 className="font-display text-2xl uppercase leading-none">
+                        {round?.name || `Round ${idx + 1}`}
+                      </h3>
+                    </div>
+                    {round?.description && (
+                      <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">
+                        {round.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* md and up: the round tabs on a heavy rule (§10.7), which have
+                  the room to sit side by side here. */}
+              <div className="hidden md:block">
+                <div
+                  role="group"
+                  aria-label="Rounds"
+                  className="scrollbar-hide -mx-1 flex gap-x-1 overflow-x-auto border-b-[3px] border-ink px-1"
                 >
-                  {round?.name || `Round ${idx + 1}`}
-                </button>
-              );
-            })}
-          </div>
-          )}
-          {showRound && (
-            <div className="mt-5 border-2 border-ink bg-wcard p-4">
-              <h3 className="font-display text-2xl uppercase leading-none">{showRound?.name}</h3>
-              <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">
-                {showRound?.description}
-              </p>
-            </div>
+                  {data?.roundDetails?.rounds?.map((round: any, idx: number) => {
+                    const isActive = showRound?.name === round?.name;
+                    return (
+                      <button
+                        type="button"
+                        key={idx}
+                        aria-pressed={isActive}
+                        className={`-mb-[3px] min-h-11 shrink-0 whitespace-nowrap border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold uppercase tracking-[0.08em] transition-colors duration-150 sm:px-4 sm:text-sm ${
+                          isActive
+                            ? "border-ink border-b-card bg-card text-ink"
+                            : "border-transparent border-b-ink text-ink-2 hover:text-ink"
+                        }`}
+                        onClick={() => setShowRound(round)}
+                      >
+                        {round?.name || `Round ${idx + 1}`}
+                      </button>
+                    );
+                  })}
+                </div>
+                {showRound && (
+                  <div className="mt-5 border-2 border-ink bg-wcard p-4">
+                    <h3 className="font-display text-2xl uppercase leading-none">{showRound?.name}</h3>
+                    <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">
+                      {showRound?.description}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-[15px] text-ink-2">Rounds to be announced.</p>
           )}
         </div>
       </section>

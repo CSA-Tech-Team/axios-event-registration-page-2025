@@ -39,7 +39,7 @@
     --shadow-md: 5px 5px 0 var(--ink);
     --shadow-lg: 10px 10px 0 var(--ink);
     --content: 1180px;
-    --gutter: clamp(16px, 2vw, 24px);
+    --gutter: clamp(20px, 4vw, 24px);
     --header-h: 52px;
 
     /*

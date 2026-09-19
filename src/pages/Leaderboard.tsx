@@ -179,7 +179,7 @@ export const Leaderboard = () => {
                 Only the top spots are filled so far.
               </p>
             ) : (
-              <ul className="scrollbar flex max-h-[60vh] flex-col overflow-y-auto">
+              <ul className="scrollbar flex max-h-[60vh] flex-col gap-1 overflow-y-auto pr-2 sm:gap-0 sm:pr-3">
                 {rest.map((entry) => (
                   <li
                     key={entry.id}
