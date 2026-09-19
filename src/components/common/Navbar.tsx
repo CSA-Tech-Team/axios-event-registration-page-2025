@@ -90,7 +90,9 @@ const NavBar: React.FC = () => {
   };
 
   const goAlumniAccommodation = () => {
-    if (user?.isProfileCompleted) {
+    // The store flag, not user.isProfileCompleted: completing the profile
+    // updates the flag straight away, the cached user only on the next fetch.
+    if (getIsProfileCompleted()) {
       navigate(ERouterPaths.ACCOMODATION);
     } else {
       toast({
