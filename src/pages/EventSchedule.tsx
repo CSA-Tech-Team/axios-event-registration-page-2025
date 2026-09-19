@@ -20,45 +20,48 @@ const EventSchedule = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Main event categories - General Events moved to top
+    // One lane per event, from the "Axios '26 Timeline" sheet
     const eventCategories = [
-        'General Events',
         'Data Quest',
         'Tech Triathlon',
         'Math Mania',
         'Breach Point',
+        'Big Bull',
         'Game Over',
-        'Survivor\'s Court',
+        'Survivors\' Court',
         'Q-Factor'
     ];
 
+    const GAME_OVER_VENUES = 'Valorant – F203; FIFA – F202; Chess – CSL 1, 2, 3; DSL';
+
+    // Day 1 - 25 Sep 2026
     const day1Schedule = [
-        { time: '9:00', endTime: '10:00', event: 'INAUGURAL', fullName: 'Inaugural Ceremony', location: 'F BLOCK ASSEMBLY HALL', type: 'ceremony', duration: "1 Hour", category: 'General Events' },
-        { time: '10:00', endTime: '10:45', event: 'DQ (R1)', fullName: 'Data Quest Round 1', location: 'SIL,OSL,IIL,NSL', type: 'competition', duration: "45 minutes", category: 'Data Quest' },
-        { time: '11:00', endTime: '13:00', event: 'TT (R1)', fullName: 'Tech Triathlon Round 1', location: 'CSL 1,CSL 2,CSL 3', type: 'competition', duration: "2 Hours", category: 'Tech Triathlon' },
-        { time: '11:00', endTime: '13:00', event: 'DQ (R2)', fullName: 'Data Quest Round 2', location: 'SIL,OSL', type: 'competition', duration: "2 Hours", category: 'Data Quest' },
-        { time: '11:00', endTime: '17:00', event: 'BP(R1)', fullName: 'Breach Point Round 1', location: 'J510,J511,J512,J513', type: 'competition', duration: "6 Hours", category: 'Breach Point' },
-        { time: '10:00', endTime: '11:00', event: 'QF (R1)', fullName: 'Q-Factor Round 1', location: 'D BLOCK GROUND FLOOR', type: 'competition', duration: "1 Hour", category: 'Q-Factor' },
-        { time: '13:00', endTime: '14:00', event: 'LUNCH BREAK', fullName: 'Lunch Break', location: 'CANTEEN', type: 'break', duration: "1 Hour", category: 'General Events' },
-        { time: '11:15', endTime: '12:00', event: 'QF (R2)', fullName: 'Q-Factor Round 2', location: 'D BLOCK GROUND FLOOR', type: 'competition', duration: "45 minutes", category: 'Q-Factor' },
-        { time: '12:15', endTime: '13:00', event: 'QF FINAL', fullName: 'Q-Factor Championship', location: 'D BLOCK GROUND FLOOR', type: 'final', duration: "45 minutes", category: 'Q-Factor' },
-        { time: '14:00', endTime: '17:00', event: 'TT (R2)', fullName: 'Tech Triathlon Round 2', location: 'CSL 1,CSL 2,CSL 3,DSL', type: 'competition', duration: "3 Hours", category: 'Tech Triathlon' },
-        { time: '14:00', endTime: '14:30', event: 'SC(R1)', fullName: 'Survivor\'s Court Round 1', location: 'M503,M504', type: 'competition', duration: "30 minutes", category: 'Survivor\'s Court' },
-        { time: '14:00', endTime: '16:00', event: 'MM (R2)', fullName: 'Math Mania Round 2', location: 'J508', type: 'competition', duration: "2 Hours", category: 'Math Mania' },
-        { time: '10:00', endTime: '16:30', event: 'GO (R1)', fullName: 'Game Over Round 1', location: 'Open Bay', type: 'competition', duration: "6 Hours 30 minutes", category: 'Game Over' },
-        { time: '12:00', endTime: '13:00', event: 'MM (R1)', fullName: 'Math Mania Round 1', location: 'M503,M504', type: 'competition', duration: "1 Hour", category: 'Math Mania' },
-        { time: '15:00', endTime: '17:00', event: 'SC(R2)', fullName: 'Survivor\'s Court Round 2', location: 'M503', type: 'competition', duration: "2 Hours", category: 'Survivor\'s Court' },
-        { time: '17:00', endTime: '20:00', event: 'ENTERTAINMENT', fullName: 'Entertainment Program', location: 'QUADRANGLE', type: 'entertainment', duration: "3 Hours", category: 'General Events' }
+        { time: '09:00', endTime: '13:00', event: 'TT (R1)', fullName: 'Tech Triathlon R1 · Chrono Casino', location: 'G Block Classrooms (4 rooms)', type: 'competition', duration: '4 hr', category: 'Tech Triathlon' },
+        { time: '14:30', endTime: '16:00', event: 'TT (R2)', fullName: 'Tech Triathlon R2 · Card Conquest', location: 'G Block Classrooms (2 rooms)', type: 'competition', duration: '1 hr 30 min', category: 'Tech Triathlon' },
+        { time: '10:00', endTime: '11:30', event: 'DQ (R1)', fullName: 'Data Quest R1 · Blitz', location: 'SIL, OSL, NSL, IIL', type: 'competition', duration: '1 hr 30 min', category: 'Data Quest' },
+        { time: '13:00', endTime: '15:30', event: 'DQ (R2)', fullName: 'Data Quest R2 · Odyssey', location: 'SIL, OSL', type: 'competition', duration: '2 hr 30 min', category: 'Data Quest' },
+        { time: '09:30', endTime: '12:30', event: 'MM (R1)', fullName: 'Math Mania R1 · Base Case', location: 'J515, J514, J516', type: 'competition', duration: '3 hr', category: 'Math Mania' },
+        { time: '14:00', endTime: '17:00', event: 'MM (R2)', fullName: 'Math Mania R2 · Math Heist', location: 'J515, J516', type: 'competition', duration: '3 hr', category: 'Math Mania' },
+        { time: '09:30', endTime: '17:00', event: 'BP (R1)', fullName: 'Breach Point R1 · Signal Zero', location: 'D Block Assembly Hall', type: 'competition', duration: '7 hr 30 min', category: 'Breach Point' },
+        { time: '09:30', endTime: '13:00', event: 'BB (R1)', fullName: 'Big Bull R1 · Land Rush', location: 'F Block Assembly Hall', type: 'competition', duration: '3 hr 30 min', category: 'Big Bull' },
+        { time: '14:00', endTime: '17:00', event: 'BB (R2)', fullName: 'Big Bull R2 · City Boom', location: 'F Block Assembly Hall', type: 'competition', duration: '3 hr', category: 'Big Bull' },
+        { time: '09:30', endTime: '17:00', event: 'GO (R1)', fullName: 'Game Over · Knockouts & Chess League', location: GAME_OVER_VENUES, type: 'competition', duration: '7 hr 30 min', category: 'Game Over' },
+        { time: '10:00', endTime: '12:00', event: 'SC (R1)', fullName: 'Survivors\' Court Prelims · Survival Phase', location: 'M503, M504', type: 'competition', duration: '2 hr', category: 'Survivors\' Court' },
+        { time: '14:00', endTime: '16:00', event: 'SC (R2)', fullName: 'Survivors\' Court Prelims · Court Phase', location: 'M503, M504', type: 'competition', duration: '2 hr', category: 'Survivors\' Court' }
     ];
 
+    // Day 2 - 26 Sep 2026
     const day2Schedule = [
-        { time: '8:30', endTime: '13:00', event: 'DQ (FINAL)', fullName: 'Data Quest Final', location: 'SIL', type: 'final', duration: "4 Hours 30 minutes", category: 'Data Quest' },
-        { time: '8:30', endTime: '11:30', event: 'TT (FINAL)', fullName: 'Tech Triathlon Final', location: 'F202', type: 'final', duration: "3 Hours", category: 'Tech Triathlon' },
-        { time: '8:30', endTime: '12:30', event: 'BP (FINAL)', fullName: 'Breach Point Final', location: 'SCL', type: 'final', duration: "4 Hours", category: 'Breach Point' },
-        { time: '8:30', endTime: '12:30', event: 'GO (FINAL)', fullName: 'Game Over Final', location: 'OPEN BAY', type: 'final', duration: "4 Hours", category: 'Game Over' },
-        { time: '13:00', endTime: '15:30', event: 'SC (FINAL)', fullName: 'Survivor\'s Court Final', location: 'D BLOCK GROUND', type: 'final', duration: "2 Hours 30 minutes", category: 'Survivor\'s Court' },
-        { time: '13:00', endTime: '15:30', event: 'MM (FINAL)', fullName: 'Math Mania Final', location: 'M503', type: 'final', duration: "2 Hours 30 minutes", category: 'Math Mania' },
-        { time: '16:30', endTime: '17:30', event: 'VALEDICTORY', fullName: 'Valedictory Ceremony', location: 'F BLOCK ASSEMBLY HALL', type: 'ceremony', duration: "1 Hour", category: 'General Events' }
+        { time: '08:30', endTime: '13:00', event: 'DQ (FINAL)', fullName: 'Data Quest Final · Forge', location: 'SIL, OSL', type: 'final', duration: '4 hr 30 min', category: 'Data Quest' },
+        { time: '16:30', endTime: '17:30', event: 'TT (FINAL)', fullName: 'Tech Triathlon Final · Code Colosseum', location: 'F Block Assembly Hall', type: 'final', duration: '1 hr', category: 'Tech Triathlon' },
+        { time: '09:30', endTime: '12:00', event: 'MM (FINAL)', fullName: 'Math Mania Final · Trail to Triumph', location: 'J515', type: 'final', duration: '2 hr 30 min', category: 'Math Mania' },
+        { time: '09:30', endTime: '14:00', event: 'BP (FINAL)', fullName: 'Breach Point Final · Red vs Blue', location: 'M503', type: 'final', duration: '4 hr 30 min', category: 'Breach Point' },
+        { time: '09:30', endTime: '13:00', event: 'BB (FINAL)', fullName: 'Big Bull Final · Corporate Future', location: 'F201', type: 'final', duration: '3 hr 30 min', category: 'Big Bull' },
+        { time: '09:30', endTime: '12:30', event: 'GO (FINAL)', fullName: 'Game Over · Finals & Chess League', location: GAME_OVER_VENUES, type: 'final', duration: '3 hr', category: 'Game Over' },
+        { time: '10:00', endTime: '12:00', event: 'SC (R3)', fullName: 'Survivors\' Court Finals · Survival Phase', location: 'D Block Conference Hall', type: 'final', duration: '2 hr', category: 'Survivors\' Court' },
+        { time: '16:15', endTime: '17:00', event: 'SC (FINAL)', fullName: 'Survivors\' Court Finals · Court Phase', location: 'D Block Conference Hall', type: 'final', duration: '45 min', category: 'Survivors\' Court' },
+        { time: '09:30', endTime: '12:00', event: 'QF (R1)', fullName: 'Q-Factor R1 · The Filter', location: 'F Block Assembly Hall', type: 'competition', duration: '2 hr 30 min', category: 'Q-Factor' },
+        { time: '13:00', endTime: '16:00', event: 'QF (FINAL)', fullName: 'Q-Factor Final · On-Stage Finals', location: 'F Block Assembly Hall', type: 'final', duration: '3 hr', category: 'Q-Factor' }
     ];
 
     const currentSchedule = selectedDay === 1 ? day1Schedule : day2Schedule;
@@ -96,13 +99,13 @@ const EventSchedule = () => {
     // category mark, never as a fill behind text.
     const getCategoryColor = (category) => {
         switch (category) {
-            case 'General Events': return 'var(--r6)';
+            case 'Big Bull': return 'var(--r6)';
             case 'Data Quest': return 'var(--r5)';
             case 'Tech Triathlon': return 'var(--r4)';
             case 'Math Mania': return 'var(--r2)';
             case 'Breach Point': return 'var(--r1)';
             case 'Game Over': return 'var(--r7)';
-            case 'Survivor\'s Court': return 'var(--r3)';
+            case 'Survivors\' Court': return 'var(--r3)';
             case 'Q-Factor': return 'var(--ink)';
             default: return 'var(--ink2)';
         }
@@ -200,7 +203,7 @@ const EventSchedule = () => {
                     )}
                     <div className="flex items-center">
                         <Calendar className="mr-3 h-5 w-5" aria-hidden="true" />
-                        <span>Duration: {event.duration} minutes</span>
+                        <span>Duration: {event.duration}</span>
                     </div>
                     <div className="flex items-center">
                         <Users className="mr-3 h-5 w-5" aria-hidden="true" />
