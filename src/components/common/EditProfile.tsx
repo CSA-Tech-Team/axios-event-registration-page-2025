@@ -384,11 +384,14 @@ const updateUserMutation = useMutation({
       description: "Your profile has been updated successfully.",
     });
   },
-  onError: (error) => {
+  onError: (error: any) => {
     console.log(error);
+    const message = error?.response?.data?.message;
     toast({
       title: "Uh oh! Something went wrong.",
-      description: `${error}`,
+      description: Array.isArray(message)
+        ? message.join(", ")
+        : message || `${error}`,
       variant: "destructive",
     });
 }});
