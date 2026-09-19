@@ -20,11 +20,11 @@ export default function FloatingWhatsAppButton({
       rel="noopener noreferrer"
       aria-label={ariaLabel}
       title={ariaLabel}
-      className="fixed right-4 bottom-[calc(56px+1rem)] md:right-8 md:bottom-8 z-50"
+      className="group fixed bottom-4 right-4 z-50 rounded-full md:bottom-8 md:right-8"
     >
       <div
         style={{ width: px, height: px }}
-        className="flex items-center justify-center rounded-full shadow-lg p-2 ring-0 hover:scale-105 transform transition-transform duration-150 bg-gradient-to-br from-green-500 to-green-600"
+        className="flex items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 p-2 shadow-lg transition-transform duration-150 group-hover:scale-105"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

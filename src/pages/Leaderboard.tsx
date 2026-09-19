@@ -2,10 +2,6 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import useAxios from "@/hooks/useAxios";
 import { ApiPaths } from "@/constants/enum";
-import lead1 from "@/assets/lead1.svg";
-import lead2 from "@/assets/lead2.svg";
-import lead3 from "@/assets/lead3.svg";
-import crown from "@/assets/crown.svg";
 
 // Matches the server cache window, so polling never asks for work the API has
 // not redone yet. React Query pauses this while the tab is in the background.
@@ -39,12 +35,12 @@ const BOARDS: { key: BoardKey; label: string }[] = [
 const PODIUM_ORDER = [1, 0, 2];
 
 // Keyed by rank rather than by slot: tied entries share a rank, and so must
-// share a badge, height and colour instead of being dressed as 1-2-3 by the
+// share a stamp, height and colour instead of being dressed as 1-2-3 by the
 // order they happen to arrive in.
-const PODIUM_STYLES: Record<number, { height: string; background: string; badge: string }> = {
-  1: { height: "h-full", background: "bg-[#311A49]", badge: lead1 },
-  2: { height: "h-2/3", background: "bg-[#1F102D]", badge: lead2 },
-  3: { height: "h-1/3", background: "bg-[#1F102D]", badge: lead3 },
+const PODIUM_STYLES: Record<number, { height: string; background: string; stamp: string }> = {
+  1: { height: "h-full", background: "bg-acc-2", stamp: "bg-acc text-white" },
+  2: { height: "h-2/3", background: "bg-card", stamp: "bg-ink text-paper" },
+  3: { height: "h-1/2", background: "bg-card", stamp: "bg-wcard text-ink" },
 };
 
 function podiumStyle(rank: number) {
@@ -81,17 +77,29 @@ export const Leaderboard = () => {
   const rest = entries.slice(3);
 
   return (
-    <main className="h-[92vh] w-full overflow-y-auto overflow-x-hidden text-white">
-      <div className="flex flex-wrap items-center justify-center gap-2 px-4 pt-6">
+    <div className="brut-container relative pb-20 pt-10 md:pt-14">
+
+      <header className="border-b-2 border-ink pb-6">
+        <p className="eyebrow text-ink-2">Axios · Live standings</p>
+        <h1 className="display-title registration mt-2">Leaderboard</h1>
+      </header>
+
+      {/* Tabs sit on a heavy rule rather than in pills (§10.7). */}
+      <div
+        role="group"
+        aria-label="Leaderboard"
+        className="mt-8 flex gap-x-1 border-b-[3px] border-ink"
+      >
         {BOARDS.map(({ key, label }) => (
           <button
             key={key}
             type="button"
+            aria-pressed={board === key}
             onClick={() => setBoard(key)}
-            className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+            className={`-mb-[3px] min-h-11 border-2 border-b-[3px] px-3 py-2 text-xs font-extrabold sm:px-5 sm:text-sm uppercase tracking-[0.08em] transition-colors duration-150 ${
               board === key
-                ? "bg-[#5D3288] text-white"
-                : "bg-[#1F102D] text-indigo-200 hover:bg-[#311A49]"
+                ? "border-ink border-b-card bg-card text-ink"
+                : "border-transparent border-b-ink text-ink-2 hover:text-ink"
             }`}
           >
             {label}
@@ -100,53 +108,62 @@ export const Leaderboard = () => {
       </div>
 
       {isLoading && (
-        <p className="py-16 text-center text-indigo-200">Loading leaderboard...</p>
+        <p className="py-16 text-center font-mono text-sm uppercase tracking-[0.08em] text-ink">
+          <span aria-hidden="true" className="mr-2 inline-block h-3 w-2 animate-brut-blink bg-ink align-middle" />
+          Loading leaderboard...
+        </p>
       )}
 
       {isError && (
-        <p className="py-16 text-center text-red-400">
+        <p
+          role="alert"
+          className="mx-auto mt-12 max-w-xl border-2 border-ink border-l-[8px] border-l-acc bg-wcard px-4 py-3 text-center font-semibold text-ink"
+        >
           Could not load the leaderboard. Please try again shortly.
         </p>
       )}
 
       {!isLoading && !isError && entries.length === 0 && (
-        <p className="py-16 text-center text-indigo-200">
-          No scores have been posted yet. Check back once events get underway.
-        </p>
+        <div className="mx-auto mt-12 max-w-xl -rotate-[0.5deg] border-2 border-dashed border-ink bg-card px-6 py-8 text-center">
+          <p className="font-note text-2xl text-ink">No scores yet</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-ink-2">
+            No scores have been posted yet. Check back once events get underway.
+          </p>
+        </div>
       )}
 
       {entries.length > 0 && (
-        <div className="flex w-full flex-col gap-6 px-4 pb-10 pt-8 lg:flex-row">
-          <section className="w-full lg:w-2/3">
-            <div className="flex justify-center">
-              <img src={crown} alt="" className="h-20 w-20" />
-            </div>
-
-            <div className="mx-auto mt-10 flex h-[40vh] max-w-2xl items-end gap-2">
+        <div className="mt-10 flex w-full flex-col gap-10 lg:flex-row lg:items-end">
+          <section aria-label="Top three" className="w-full lg:min-w-0 lg:flex-[2]">
+            <div className="mx-auto flex h-[40vh] min-h-[300px] max-w-2xl items-end gap-3">
               {podium.map((entry, slot) => {
-                if (!entry) return <div key={slot} className="w-1/3" />;
+                if (!entry) return <div key={slot} className="min-w-0 flex-1" />;
                 const style = podiumStyle(entry.rank);
 
                 return (
                   <div
                     key={entry.id}
-                    // min-h-fit keeps the short third-place bar from spilling its
-                    // name and score out below the card onto the page background.
-                    className={`${style.height} ${style.background} flex min-h-fit w-1/3 flex-col items-center justify-start rounded-2xl px-2 pb-4`}
+                    // min-h-fit keeps the short third-place block from spilling
+                    // its name and score out below the card.
+                    className={`${style.height} ${style.background} flex min-h-fit min-w-0 flex-1 flex-col items-center justify-start border-2 border-ink px-2 pb-4 text-ink shadow-brut-md`}
                   >
-                    <img
-                      src={style.badge}
-                      alt={`Rank ${entry.rank}`}
-                      className="-mt-12 h-24 w-24"
-                    />
+                    <div className="-mt-7">
+                      <span
+                        role="img"
+                        aria-label={`Rank ${entry.rank}`}
+                        className={`${style.stamp} flex h-14 w-14 items-center justify-center rounded-full border-2 border-ink font-display text-2xl shadow-brut-sm`}
+                      >
+                        {entry.rank}
+                      </span>
+                    </div>
                     <div className="mt-3 w-full text-center">
-                      <div className="truncate px-2 text-sm md:text-base">
+                      <div lang="en" className="line-clamp-3 hyphens-auto break-words px-1 text-[11px] font-bold leading-tight sm:px-2 sm:text-sm md:text-base">
                         {entryLabel(entry)}
                       </div>
-                      <div className="mt-1 text-xl font-semibold md:text-3xl">
+                      <div className="mt-1 font-display text-3xl leading-none md:text-5xl">
                         {entry.totalScore}
                       </div>
-                      <div className="mt-1 truncate px-2 text-xs text-indigo-300">
+                      <div className="mt-2 break-words px-1 font-mono text-[11px] uppercase leading-tight sm:px-2 sm:text-xs">
                         {entrySubLabel(entry, board)}
                       </div>
                     </div>
@@ -156,28 +173,28 @@ export const Leaderboard = () => {
             </div>
           </section>
 
-          <section className="w-full rounded-2xl bg-[#1F102D] p-4 lg:w-1/3">
+          <section aria-label="Rankings" className="brut-card w-full p-4 lg:min-w-0 lg:flex-1">
             {rest.length === 0 ? (
-              <p className="py-8 text-center text-sm text-indigo-300">
+              <p className="py-8 text-center text-sm text-ink-2">
                 Only the top spots are filled so far.
               </p>
             ) : (
-              <ul className="flex max-h-[60vh] flex-col overflow-y-auto">
+              <ul className="scrollbar flex max-h-[60vh] flex-col overflow-y-auto">
                 {rest.map((entry) => (
                   <li
                     key={entry.id}
-                    className="flex items-center justify-between gap-3 border-b border-[#5F59598A] py-3"
+                    className="flex items-center justify-between gap-3 border-b-2 border-dashed border-line py-3 last:border-b-0"
                   >
-                    <span className="min-w-[2.5rem] rounded-full bg-[#311A49] px-3 py-1 text-center text-sm">
+                    <span className="min-w-[2.75rem] border-2 border-ink bg-wcard px-2 py-1 text-center font-mono text-sm font-bold">
                       {entry.rank}
                     </span>
                     <div className="flex-1 overflow-hidden">
-                      <div className="truncate text-sm">{entryLabel(entry)}</div>
-                      <div className="truncate text-xs text-indigo-300">
+                      <div className="truncate text-sm font-bold">{entryLabel(entry)}</div>
+                      <div className="truncate text-xs text-ink-2">
                         {entrySubLabel(entry, board)}
                       </div>
                     </div>
-                    <span className="text-sm font-semibold">{entry.totalScore}</span>
+                    <span className="font-display text-xl">{entry.totalScore}</span>
                   </li>
                 ))}
               </ul>
@@ -185,6 +202,6 @@ export const Leaderboard = () => {
           </section>
         </div>
       )}
-    </main>
+    </div>
   );
 };

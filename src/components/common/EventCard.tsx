@@ -1,76 +1,76 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Clock9 } from "lucide-react";
-import { CalendarDays } from "lucide-react";
-import { FC } from "react";
+import { CSSProperties, FC } from "react";
+import { eventAccent, eventLogo, eventTilt } from "@/lib/eventArt";
+
 interface EventCardProps {
   data: any;
+  index?: number;
+  /** Set when the viewer has no team that fits this event's size. */
+  teamNotice?: string | null;
 }
 
-export const EventCard: FC<EventCardProps> = ({ data }) => {
+/**
+ * Poster-card for the events board (§10.3): card stock, ink border, one
+ * spectrum-coloured hard shadow, a small tilt that straightens on hover/focus.
+ * The parent supplies the link, so nothing inside is interactive.
+ */
+export const EventCard: FC<EventCardProps> = ({ data, index = 0, teamNotice }) => {
+  const logo = eventLogo(data);
+  const style = {
+    "--tilt": `${eventTilt(index)}deg`,
+    "--accent": eventAccent(index),
+  } as CSSProperties;
+
   return (
-    // <main className="rounded-2xl  p-10 flex flex-col gap-4 text-white bg-[#232323]">
-    //   <div className="text-3xl">{data?.title}</div>
-    //   <div className="flex justify-between flex-wrap-reverse  gap-4 items-center">
-    //     <div>
-    //      {data?.description}
-    //     </div>
-    //     <div>
-    //       <div className="p-10 lg:flex  text-black bg-white rounded-full">
-    //         Event Logo
-    //       </div>
-    //     </div>
-    //   </div>
-    //   <div className="flex gap-8">
-    //     <div className="flex items-center gap-1">
-    //       <Clock9 />
-    //       <span>{data?.startTime.slice(11,16)} - {data?.endTime.slice(11,16)}</span>
-    //     </div>
-    //     <div className="flex items-center gap-1">
-    //       {/* <img src={caleder} alt="" className="w-5" /> */}
-    //       <CalendarDays />
-    //       <span>{data?.startTime.slice(0,10)}</span>
-    //     </div>
-    //   </div>
-    // </main>
-    <main className="max-w-md mx-auto bg-gradient-to-br from-[#2b2b2b] to-[#1a1a1a] rounded-2xl shadow-2xl overflow-hidden text-white">
-      {/* Event Logo */}
-      <div className="flex justify-center p-6">
-        <img
-          src={data?.logo}
-          alt="Event Logo"
-          className="w-32 h-32 xl:w-40 xl:h-40 object-cover rounded-full border-4 border-white shadow-lg"
-        />
-      </div>
-
-      {/* Event Info */}
-      <div className="px-8 pb-6 text-center space-y-3">
-        <h2 className="text-2xl font-bold text-[#80466E] tracking-wide">{data?.title}</h2>
-        <p className="text-gray-300 text-sm leading-relaxed">
-          {data?.description}
-        </p>
-
-        {/* Timings */}
-        <div className="flex max-[450px]:flex-col max-[425px]:items-center max-[425px]:gap-3 justify-center gap-6 text-gray-200 mt-4">
-          {/*<div className="flex items-center gap-2">
-            <Clock9 className="w-5 h-5 " color="#80466E"/>
-            <span className="font-medium">
-              {data?.startTime.slice(11, 16)} - {data?.endTime.slice(11, 16)}
+    <article
+      style={style}
+      className="flex h-full rotate-[var(--tilt)] flex-col border-2 border-ink bg-card p-5 text-ink shadow-[6px_6px_0_var(--accent)] transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1 group-hover:rotate-0 group-hover:shadow-[8px_8px_0_var(--accent)] group-focus-visible:-translate-y-1 group-focus-visible:rotate-0"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
+          {logo ? (
+            <img
+              src={logo}
+              alt=""
+              className="h-full w-full object-contain"
+              loading="lazy"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="font-display text-3xl uppercase leading-none"
+            >
+              {data?.title?.charAt(0) ?? "✦"}
             </span>
-          </div>*/}
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-5 h-5" color="#80466E"/>
-            <span className="font-medium">{data?.startTime.slice(0, 10)}</span>
-          </div>
+          )}
         </div>
+        <span className="rotate-[1deg] border-2 border-ink bg-wcard px-2 py-1 font-mono text-xs font-bold uppercase shadow-brut-sm">
+          {data?.startTime?.slice(0, 10)}
+        </span>
+      </div>
 
-        {/* Show Details Button */}
-        <div className="pt-6">
-          <button className="bg-[#80466E] bg-[length:200%_100%] bg-right hover:bg-[linear-gradient(to_left,#80466E,#2D1F44)] hover:bg-left text-white px-8 py-2.5 rounded-full font-semibold shadow-lg transition-all duration-700 ease-in-out">
-            Show Details
-          </button>
+      <h2 className="mt-5 font-display text-[clamp(30px,4vw,40px)] uppercase leading-[0.9]">
+        {data?.title}
+      </h2>
+      <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-2">
+        {data?.description}
+      </p>
+
+      {teamNotice && (
+        <p className="mt-4 border-2 border-ink border-l-[6px] border-l-acc-2 bg-wcard px-3 py-2 text-sm text-ink">
+          <span className="eyebrow mr-1.5">Team needed ·</span>
+          {teamNotice} Join or create a team to participate.
+        </p>
+      )}
+
+      <div className="mt-auto pt-5">
+        <div className="flex items-center justify-between border-t-2 border-dashed border-line pt-4">
+          <span className="eyebrow text-ink-2">Event brief</span>
+          <span className="font-bold underline decoration-acc decoration-[3px] underline-offset-4">
+            See details ▸
+          </span>
         </div>
       </div>
-    </main>
-
+    </article>
   );
 };

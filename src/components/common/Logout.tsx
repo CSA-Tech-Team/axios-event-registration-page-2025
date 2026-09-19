@@ -2,7 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ERouterPaths } from "@/constants/enum";
+import { toast } from "@/hooks/use-toast";
 import { signOut } from "@/lib/auth-client";
+import { SIGN_OUT_ERROR, SIGN_OUT_ERROR_TITLE } from "@/lib/auth-errors";
 import { useAuthStore } from "@/store/ApiStates";
 import { Button } from "../ui/button";
 
@@ -13,17 +15,26 @@ function Logout() {
 
   /**
    * Clears the server session and the cached bearer token, then the local
-   * store. Previously this button had no handler at all and signing out did
-   * nothing.
+   * store. Local state is only dropped once the server confirms - otherwise
+   * the still-live session would bounce the user straight back from /signin.
    */
   const handleLogout = async () => {
+    if (isSigningOut) return;
     setIsSigningOut(true);
     try {
       await signOut();
-    } finally {
-      clearTokens();
-      navigate(ERouterPaths.SIGNIN, { replace: true });
+    } catch (err) {
+      console.error("Sign-out failed", err);
+      toast({
+        title: SIGN_OUT_ERROR_TITLE,
+        description: SIGN_OUT_ERROR,
+        variant: "destructive",
+      });
+      setIsSigningOut(false);
+      return;
     }
+    clearTokens();
+    navigate(ERouterPaths.SIGNIN, { replace: true });
   };
 
   return (

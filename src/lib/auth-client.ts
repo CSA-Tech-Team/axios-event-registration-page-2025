@@ -89,23 +89,44 @@ export const authClient = createAuthClient({
 
 export const { useSession, getSession, signIn } = authClient;
 
-/** Starts the Google redirect flow. */
+/**
+ * Starts the Google redirect flow. Throws when the API refuses to start it -
+ * Better Auth reports that as `{ error }` instead of rejecting, which would
+ * otherwise leave callers waiting on a redirect that never happens.
+ */
 export async function signInWithGoogle(
   callbackURL: string,
   errorCallbackURL?: string,
 ) {
-  return authClient.signIn.social({
+  const result = await authClient.signIn.social({
     provider: "google",
     callbackURL,
     errorCallbackURL,
   });
+  if (result.error) {
+    throw new Error(
+      result.error.message || "Google sign-in could not be started",
+    );
+  }
+  return result;
 }
 
-/** Clears both the server session and the locally cached bearer token. */
+/**
+ * Ends the server session, then drops the cached bearer token.
+ *
+ * Throws when the server still holds a session afterwards. Better Auth reports
+ * a failed sign-out as `{ error }` instead of rejecting, and treating that as
+ * success would show a signed-out screen over a live session - the next
+ * session check then bounces the user straight back in. A failure because
+ * there was no session to end counts as signed out.
+ */
 export async function signOut() {
-  try {
-    await authClient.signOut();
-  } finally {
-    clearStoredToken();
+  const result = await authClient.signOut();
+  if (result.error) {
+    const current = await authClient.getSession();
+    if (current.error || current.data) {
+      throw new Error(result.error.message || "Sign-out failed");
+    }
   }
+  clearStoredToken();
 }

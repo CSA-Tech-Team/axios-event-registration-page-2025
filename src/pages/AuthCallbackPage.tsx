@@ -47,10 +47,18 @@ const AuthCallbackPage = () => {
   }, [isPending, session, timedOut, navigate]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/20 border-t-[#E0B84C]" />
-        <p className="font-lato text-sm text-white/70">Finishing sign-in…</p>
+    <main className="flex min-h-dvh items-center justify-center px-4">
+      <div
+        role="status"
+        className="brut-inverse flex items-center gap-3 border-2 border-ink px-5 py-4 shadow-brut-md"
+      >
+        <span
+          aria-hidden="true"
+          className="h-4 w-3 animate-brut-blink bg-term-fg"
+        />
+        <p className="font-mono text-sm uppercase tracking-[0.08em] text-term-fg">
+          Finishing sign-in…
+        </p>
       </div>
     </main>
   );
