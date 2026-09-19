@@ -27,23 +27,24 @@ export const EventCard: FC<EventCardProps> = ({ data, index = 0, teamNotice }) =
       className="flex h-full rotate-[var(--tilt)] flex-col border-2 border-ink bg-card p-5 text-ink shadow-[6px_6px_0_var(--accent)] transition-[transform,box-shadow] duration-200 group-hover:-translate-y-1 group-hover:rotate-0 group-hover:shadow-[8px_8px_0_var(--accent)] group-focus-visible:-translate-y-1 group-focus-visible:rotate-0"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
-          {logo ? (
-            <img
-              src={logo}
-              alt=""
-              className="h-full w-full object-contain"
-              loading="lazy"
-            />
-          ) : (
+        {logo ? (
+          // No frame: just the logo, in its own shape.
+          <img
+            src={logo}
+            alt=""
+            className="h-[62px] w-auto max-w-[120px] shrink-0 object-contain"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
             <span
               aria-hidden="true"
               className="font-display text-3xl uppercase leading-none"
             >
               {data?.title?.charAt(0) ?? "✦"}
             </span>
-          )}
-        </div>
+          </div>
+        )}
         <span className="rotate-[1deg] border-2 border-ink bg-wcard px-2 py-1 font-mono text-xs font-bold uppercase shadow-brut-sm">
           {data?.startTime?.slice(0, 10)}
         </span>

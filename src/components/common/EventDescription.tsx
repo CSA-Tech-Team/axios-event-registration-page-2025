@@ -555,15 +555,20 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
       {/* Left: identity, facts, registration, conveners */}
       <section className="brut-card flex flex-col gap-6 p-5 sm:p-7">
         <div className="flex items-start gap-4">
-          <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
-            {logo ? (
-              <img src={logo} alt="" className="h-full w-full object-contain" />
-            ) : (
+          {logo ? (
+            // No frame: the logo keeps its own shape and aspect ratio.
+            <img
+              src={logo}
+              alt=""
+              className="h-[62px] w-auto max-w-[120px] shrink-0 object-contain"
+            />
+          ) : (
+            <div className="flex h-[62px] w-[62px] shrink-0 items-center justify-center border-2 border-ink bg-wcard p-1.5">
               <span aria-hidden="true" className="font-display text-3xl uppercase leading-none">
                 {data?.title?.charAt(0) ?? "✦"}
               </span>
-            )}
-          </div>
+            </div>
+          )}
           <div className="min-w-0">
             <p className="eyebrow text-ink-2">Axios · Event brief</p>
             <h1 className="mt-2 break-words font-display text-[clamp(38px,7vw,72px)] uppercase leading-[0.9]">
