@@ -39,6 +39,7 @@ export enum ApiPaths {
 
   //USER
   USER = "/me/user",
+  USER_REFERRAL = "/me/user/referral",
   PRE_SIGNEDIN_PROFILE = "/me/user/pre-signed-url/profile",
 
   //TEAMS

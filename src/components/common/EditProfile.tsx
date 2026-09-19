@@ -427,14 +427,17 @@ const updateUserMutation = useMutation({
     data.degreeOfStudy = finalDegreeOfStudy;
     data.yearOfStudy = selectedYear;
 
+    // Alumni never see college, course or year - the mutation fills those in -
+    // so demanding them here left alumni with no way to finish the form.
+    const isAlumni = user?.role === "ALUMNI";
+
     //whether all fields are filled
     if (
       !data.firstName ||
       !data.lastName ||
-      !data.collegeName ||
-      !data.yearOfStudy ||
-      !data.degreeOfStudy ||
-      !data.phoneNumber
+      !data.phoneNumber ||
+      (!isAlumni &&
+        (!data.collegeName || !data.yearOfStudy || !data.degreeOfStudy))
     ) {
       toast({
         title: "All fields are required",
@@ -453,7 +456,7 @@ const updateUserMutation = useMutation({
     }
 
     // Validation for year of study based on course
-    const course = (data.degreeOfStudy || "").toLowerCase();
+    const course = isAlumni ? "" : (data.degreeOfStudy || "").toLowerCase();
     const year = parseInt(data.yearOfStudy || "0");
     if (/^b\s*\.?\s*sc/i.test(course)) {
       if (year <= 1) {

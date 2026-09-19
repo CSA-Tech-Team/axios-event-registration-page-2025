@@ -4,7 +4,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import BrandMark from "@/components/common/BrandMark";
 import GoogleIcon from "@/components/common/GoogleIcon";
 import { ERouterPaths } from "@/constants/enum";
-import { signInWithGoogle, useSession } from "@/lib/auth-client";
+import {
+  REFERRAL_CODE_KEY,
+  signInWithGoogle,
+  useSession,
+} from "@/lib/auth-client";
 import { SIGN_IN_START_ERROR, signInErrorMessage } from "@/lib/auth-errors";
 
 /**
@@ -35,27 +39,31 @@ const SignIn = () => {
   /**
    * The landing page links here with ?referralCode=... (including the alumni
    * link). The Google redirect would otherwise drop it, so it is parked for
-   * the trip and read back after the callback.
-   *
-   * NOTE: nothing applies it yet. Referrals and the alumni role were handled
-   * only by the legacy register route, which is retired - the API needs an
-   * endpoint to claim a code for the signed-in user before this does anything.
+   * the trip and claimed by AuthCallbackPage once the session exists.
    */
   useEffect(() => {
     const referralCode = searchParams.get("referralCode");
     if (referralCode) {
       try {
-        sessionStorage.setItem("axios.auth.referralCode", referralCode);
+        sessionStorage.setItem(REFERRAL_CODE_KEY, referralCode);
       } catch {
         /* private mode - the code is simply lost, which is what happens today */
       }
     }
   }, [searchParams]);
 
-  // Already signed in - don't make them do it twice.
+  // Already signed in - don't make them do it twice. A link that carried a
+  // code still goes through the callback, which is what claims it.
   useEffect(() => {
-    if (!isPending && session) navigate(ERouterPaths.PROFILE, { replace: true });
-  }, [isPending, session, navigate]);
+    if (!isPending && session) {
+      navigate(
+        searchParams.get("referralCode")
+          ? ERouterPaths.AUTH_CALLBACK
+          : ERouterPaths.PROFILE,
+        { replace: true },
+      );
+    }
+  }, [isPending, session, navigate, searchParams]);
 
   const handleGoogleSignIn = async () => {
     setError(null);

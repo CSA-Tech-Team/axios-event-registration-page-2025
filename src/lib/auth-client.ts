@@ -7,6 +7,9 @@ const DEFAULT_AUTH_BASE_PATH = "/api/auth/v2";
 /** Where a bearer token is kept when the API hands one back. */
 export const TOKEN_STORAGE_KEY = "axios.auth.token";
 
+/** Where a ?referralCode= waits (sessionStorage) while Google has the tab. */
+export const REFERRAL_CODE_KEY = "axios.auth.referralCode";
+
 /**
  * `VITE_DARPANET_HOST` points at ".../api"; Better Auth wants the bare origin
  * and appends its own base path.
