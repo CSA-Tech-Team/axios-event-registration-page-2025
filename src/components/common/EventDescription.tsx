@@ -385,10 +385,11 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FC, useState, useEffect } from "react";
-import { Timer, Layers, Calendar, Users } from "lucide-react";
+import { Timer, Layers, Calendar, Users, Clock, MapPin, Phone } from "lucide-react";
 import VioletProfile from "@/assets/violetProfile.svg";
 import { Button } from "../ui/button";
 import { eventLogo } from "@/lib/eventArt";
+import { EVENT_COORDINATORS } from "@/constants/eventCoordinators";
 import { teamRequirementMessage, useTeamRequirement } from "@/hooks/useTeamRequirement";
 import {
   Dialog,
@@ -549,6 +550,14 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
 
   const logo = eventLogo(data);
   const sectionTitle = "eyebrow mb-3 text-ink-2";
+
+  const coordinators = data?.id ? EVENT_COORDINATORS[data.id] ?? [] : [];
+  const prizes: any[] = data?.prizeDetails?.prizes ?? [];
+  const prizeTotal = prizes.reduce((sum, prize) => sum + (Number(prize?.amount) || 0), 0);
+  const rupees = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
+  // Round dates are stored as YYYY-MM-DD; Axios runs over two days.
+  const dayLabel = (date?: string) =>
+    date === "2026-09-25" ? "Day 1 · 25 Sep" : date === "2026-09-26" ? "Day 2 · 26 Sep" : date;
 
   return (
     <div className="grid w-full grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-10">
@@ -719,10 +728,30 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
           </div>
         )}
 
-        {/* Conveners */}
+        {/* Coordinators from the event sheet; DB conveners when there are none */}
         <div className="border-t-2 border-dashed border-line pt-5">
-          <h2 className={sectionTitle}>Conveners</h2>
-          {data?.conveners && data?.conveners.length > 0 ? (
+          <h2 className={sectionTitle}>{coordinators.length > 0 ? "Coordinators" : "Conveners"}</h2>
+          {coordinators.length > 0 ? (
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {coordinators.map((coordinator) => (
+                <li
+                  key={coordinator.phone}
+                  className="flex items-center gap-3 border-2 border-ink bg-wcard p-3"
+                >
+                  <Phone className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  <div className="min-w-0">
+                    <p className="truncate font-bold text-ink max-[500px]:text-sm">{coordinator.name}</p>
+                    <a
+                      href={`tel:+91${coordinator.phone}`}
+                      className="font-mono text-sm text-ink-2 underline-offset-2 hover:text-ink hover:underline"
+                    >
+                      {coordinator.phone}
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : data?.conveners && data?.conveners.length > 0 ? (
             <ul className="scrollbar flex max-h-56 flex-col gap-3 overflow-y-auto pb-1 pr-2">
               {data?.conveners?.map((convener: any, idx: number) => (
                 <li
@@ -790,12 +819,52 @@ export const EventDescription: FC<EventDescriptionProps> = ({ data }) => {
           {showRound && (
             <div className="mt-5 border-2 border-ink bg-wcard p-4">
               <h3 className="font-display text-2xl uppercase leading-none">{showRound?.name}</h3>
+              {(showRound?.date || showRound?.startTime || showRound?.venue) && (
+                <dl className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 font-mono text-sm text-ink-2">
+                  {showRound?.date && (
+                    <div className="flex items-center gap-1.5">
+                      <dt><Calendar size={14} aria-label="Date" /></dt>
+                      <dd>{dayLabel(showRound.date)}</dd>
+                    </div>
+                  )}
+                  {showRound?.startTime && (
+                    <div className="flex items-center gap-1.5">
+                      <dt><Clock size={14} aria-label="Time" /></dt>
+                      <dd>
+                        {showRound.startTime}
+                        {showRound?.endTime ? ` – ${showRound.endTime}` : ""}
+                        {showRound?.duration ? ` (${showRound.duration})` : ""}
+                      </dd>
+                    </div>
+                  )}
+                  {showRound?.venue && (
+                    <div className="flex items-center gap-1.5">
+                      <dt><MapPin size={14} aria-label="Venue" /></dt>
+                      <dd>{showRound.venue}</dd>
+                    </div>
+                  )}
+                </dl>
+              )}
               <p className="mt-3 whitespace-pre-line text-[15px] leading-relaxed text-ink">
                 {showRound?.description}
               </p>
             </div>
           )}
         </div>
+
+        {prizes.length > 0 && (
+          <div className="border-t-2 border-dashed border-line pt-5">
+            <h2 className={sectionTitle}>Prize Pool · {rupees(prizeTotal)}</h2>
+            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {prizes.map((prize: any, idx: number) => (
+                <li key={idx} className="border-2 border-ink bg-wcard p-3">
+                  <p className="eyebrow text-ink-2">{prize?.position}</p>
+                  <p className="mt-1 font-mono text-lg font-bold text-ink">{rupees(Number(prize?.amount) || 0)}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
     </div>
   );
