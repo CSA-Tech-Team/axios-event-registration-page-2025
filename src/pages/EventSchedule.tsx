@@ -28,11 +28,12 @@ const EventSchedule = () => {
         'Breach Point',
         'Big Bull',
         'Game Over',
+        'Chess',
         'Survivors\' Court',
         'Q-Factor'
     ];
 
-    const GAME_OVER_VENUES = 'Valorant – F203; FIFA – F202; Chess – CSL 1, 2, 3; DSL';
+    const GAME_OVER_VENUES = 'Valorant – F203; FIFA – F202';
 
     // Day 1 - 25 Sep 2026
     const day1Schedule = [
@@ -45,7 +46,7 @@ const EventSchedule = () => {
         { time: '09:30', endTime: '17:00', event: 'BP (R1)', fullName: 'Breach Point R1 · Signal Zero', location: 'D Block Assembly Hall', type: 'competition', duration: '7 hr 30 min', category: 'Breach Point' },
         { time: '09:30', endTime: '13:00', event: 'BB (R1)', fullName: 'Big Bull R1 · Land Rush', location: 'F Block Assembly Hall', type: 'competition', duration: '3 hr 30 min', category: 'Big Bull' },
         { time: '14:00', endTime: '17:00', event: 'BB (R2)', fullName: 'Big Bull R2 · City Boom', location: 'F Block Assembly Hall', type: 'competition', duration: '3 hr', category: 'Big Bull' },
-        { time: '09:30', endTime: '17:00', event: 'GO (R1)', fullName: 'Game Over · Knockouts & Chess League', location: GAME_OVER_VENUES, type: 'competition', duration: '7 hr 30 min', category: 'Game Over' },
+        { time: '09:30', endTime: '17:00', event: 'GO (R1)', fullName: 'Game Over · Valorant & FIFA Knockouts', location: GAME_OVER_VENUES, type: 'competition', duration: '7 hr 30 min', category: 'Game Over' },
         { time: '10:00', endTime: '12:00', event: 'SC (R1)', fullName: 'Survivors\' Court Prelims · Survival Phase', location: 'M503, M504', type: 'competition', duration: '2 hr', category: 'Survivors\' Court' },
         { time: '14:00', endTime: '16:00', event: 'SC (R2)', fullName: 'Survivors\' Court Prelims · Court Phase', location: 'M503, M504', type: 'competition', duration: '2 hr', category: 'Survivors\' Court' }
     ];
@@ -57,7 +58,8 @@ const EventSchedule = () => {
         { time: '09:30', endTime: '12:00', event: 'MM (FINAL)', fullName: 'Math Mania Final · Trail to Triumph', location: 'J515', type: 'final', duration: '2 hr 30 min', category: 'Math Mania' },
         { time: '09:30', endTime: '14:00', event: 'BP (FINAL)', fullName: 'Breach Point Final · Red vs Blue', location: 'M503', type: 'final', duration: '4 hr 30 min', category: 'Breach Point' },
         { time: '09:30', endTime: '13:00', event: 'BB (FINAL)', fullName: 'Big Bull Final · Corporate Future', location: 'F201', type: 'final', duration: '3 hr 30 min', category: 'Big Bull' },
-        { time: '09:30', endTime: '12:30', event: 'GO (FINAL)', fullName: 'Game Over · Finals & Chess League', location: GAME_OVER_VENUES, type: 'final', duration: '3 hr', category: 'Game Over' },
+        { time: '09:30', endTime: '12:30', event: 'GO (FINAL)', fullName: 'Game Over · Valorant & FIFA Finals', location: GAME_OVER_VENUES, type: 'final', duration: '3 hr', category: 'Game Over' },
+        { time: '10:00', endTime: '13:00', event: 'CHESS', fullName: 'Game Over Chess · League Stage', location: 'CSL 1, CSL 2, CSL 3, DSL', type: 'competition', duration: '3 hr', category: 'Chess' },
         { time: '10:00', endTime: '12:00', event: 'SC (R3)', fullName: 'Survivors\' Court Finals · Survival Phase', location: 'D Block Conference Hall', type: 'final', duration: '2 hr', category: 'Survivors\' Court' },
         { time: '16:15', endTime: '17:00', event: 'SC (FINAL)', fullName: 'Survivors\' Court Finals · Court Phase', location: 'D Block Conference Hall', type: 'final', duration: '45 min', category: 'Survivors\' Court' },
         { time: '09:30', endTime: '12:00', event: 'QF (R1)', fullName: 'Q-Factor R1 · The Filter', location: 'F Block Assembly Hall', type: 'competition', duration: '2 hr 30 min', category: 'Q-Factor' },
@@ -104,7 +106,8 @@ const EventSchedule = () => {
             case 'Tech Triathlon': return 'var(--r4)';
             case 'Math Mania': return 'var(--r2)';
             case 'Breach Point': return 'var(--r1)';
-            case 'Game Over': return 'var(--r7)';
+            case 'Game Over':
+            case 'Chess': return 'var(--r7)';
             case 'Survivors\' Court': return 'var(--r3)';
             case 'Q-Factor': return 'var(--ink)';
             default: return 'var(--ink2)';
