@@ -7,7 +7,7 @@ function LandingPage() {
         <p className="eyebrow text-ink-2">Axios · Community</p>
         <h1 className="display-title registration mt-2">The lounge</h1>
         <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-ink-2 md:text-base">
-          Announcements, questions and team-hunting happen on the Axios Discord.
+          Official announcements from the Axios team, straight from our Discord.
         </p>
       </header>
 
